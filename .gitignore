@@ -1,0 +1,26 @@
+# Claude system
+.claude/
+
+# Claude context files
+CLAUDE.md
+state.md
+
+# Env files
+.env
+.env.local
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
