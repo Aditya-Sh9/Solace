@@ -1,0 +1,178 @@
+// Solace database schema
+// All migrations run against Supabase Postgres
+// Auth is handled by Supabase — User.id mirrors auth.users.id
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Users & Profiles
+// ─────────────────────────────────────────────
+
+model User {
+  id        String   @id // mirrors Supabase auth.users.id (UUID)
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile      UserProfile?
+  checkIns     CheckIn[]
+  journalEntries JournalEntry[]
+  insights     Insight[]
+  cycleEntries CycleEntry[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique @map("user_id")
+  age             Int?
+  activityLevel   ActivityLevel?  @map("activity_level")
+  dietaryPattern  DietaryPattern? @map("dietary_pattern")
+  wellnessGoal    String?   @map("wellness_goal")
+  cycleTracking   Boolean   @default(false) @map("cycle_tracking")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// ─────────────────────────────────────────────
+// Daily Check-ins
+// ─────────────────────────────────────────────
+
+model CheckIn {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  date             DateTime  @db.Date
+  moodScore        Int       @map("mood_score")       // 1–6
+  energyScore      Int       @map("energy_score")     // 1–6
+  sleepHours       Float?    @map("sleep_hours")
+  waterGlasses     Int?      @map("water_glasses")
+  sunlightMinutes  Int?      @map("sunlight_minutes")
+  stressLevel      Int?      @map("stress_level")     // 1–5
+  notes            String?
+  symptoms         String[]  // free-text tags from symptom chips
+  deletedAt        DateTime? @map("deleted_at")       // soft delete
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  insights Insight[]
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([userId, date])
+  @@map("check_ins")
+}
+
+// ─────────────────────────────────────────────
+// Journal (client-side encrypted — server stores ciphertext only)
+// ─────────────────────────────────────────────
+
+model JournalEntry {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  date       DateTime  @db.Date
+  ciphertext String    // AES-GCM encrypted blob (base64)
+  iv         String    // Initialisation vector (base64)
+  deletedAt  DateTime? @map("deleted_at") // soft delete
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("journal_entries")
+}
+
+// ─────────────────────────────────────────────
+// AI-generated Insights
+// ─────────────────────────────────────────────
+
+model Insight {
+  id          String      @id @default(cuid())
+  userId      String      @map("user_id")
+  checkInId   String?     @map("check_in_id")
+  type        InsightType
+  title       String
+  body        String
+  flags       String[]    // deficiency flags from rule engine
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkIn CheckIn? @relation(fields: [checkInId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("insights")
+}
+
+// ─────────────────────────────────────────────
+// Women's Wellness — Cycle Tracking
+// ─────────────────────────────────────────────
+
+model CycleEntry {
+  id          String      @id @default(cuid())
+  userId      String      @map("user_id")
+  date        DateTime    @db.Date
+  phase       CyclePhase?
+  flowLevel   FlowLevel?  @map("flow_level")
+  notes       String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("cycle_entries")
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHTLY_ACTIVE
+  MODERATELY_ACTIVE
+  VERY_ACTIVE
+}
+
+enum DietaryPattern {
+  OMNIVORE
+  VEGETARIAN
+  VEGAN
+  PESCATARIAN
+  OTHER
+}
+
+enum InsightType {
+  DEFICIENCY_FLAG
+  PATTERN
+  ENCOURAGEMENT
+  RECOMMENDATION
+}
+
+enum CyclePhase {
+  MENSTRUAL
+  FOLLICULAR
+  OVULATORY
+  LUTEAL
+}
+
+enum FlowLevel {
+  LIGHT
+  MEDIUM
+  HEAVY
+  SPOTTING
+}
