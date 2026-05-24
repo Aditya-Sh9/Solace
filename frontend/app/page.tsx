@@ -3,8 +3,6 @@ import type { ReactNode } from 'react';
 import {
   FloatingBackground,
   InkCard,
-  MoodFace,
-  MoodGraph,
   Icon,
   HandDrawnUnderline,
   MarginDoodle,
@@ -13,6 +11,14 @@ import {
   IllustrationPlant,
 } from '@/src/components/ui';
 import FeatureMoodPicker from './_components/FeatureMoodPicker';
+import HeroText from './_components/HeroText';
+import HeroVisual from './_components/HeroVisual';
+import FinalCTA from './_components/FinalCTA';
+import GetsToKnowYou from './_components/GetsToKnowYou';
+import HowItWorks from './_components/HowItWorks';
+import HumanQuote from './_components/HumanQuote';
+import JournalMoment from './_components/JournalMoment';
+import LandingFooter from './_components/LandingFooter';
 import LandingNav from './_components/LandingNav';
 
 // ─── Belief card ──────────────────────────────────────────────────────────────
@@ -88,52 +94,6 @@ function Never({ text }: { text: string }) {
   );
 }
 
-// ─── Hero visual ──────────────────────────────────────────────────────────────
-
-function HeroVisual() {
-  return (
-    <div style={{ position: 'relative', minHeight: 460 }}>
-      <InkCard hand handIntensity={2.0} tilt={-2.4} style={{
-        position: 'absolute', top: 20, left: 0, right: 40,
-        padding: '22px 22px 14px', background: 'var(--surface)', zIndex: 1,
-      }}>
-        <div className="eyebrow" style={{ marginBottom: 4 }}>Recent days</div>
-        <div className="hand" style={{ fontSize: 18, color: 'var(--accent)', marginBottom: 6 }}>mostly gentle</div>
-        <MoodGraph data={[2.4, 3.8, 1.2, 3.0, 5.4, 3.6, 0.6]} width={420} height={120} wobble={0.2} />
-      </InkCard>
-
-      <InkCard hand handIntensity={2.2} tilt={1.4} style={{
-        position: 'absolute', top: 200, left: 40, right: 0,
-        padding: 22, background: 'var(--paper)', zIndex: 2,
-      }}>
-        <div className="eyebrow" style={{ marginBottom: 6 }}>Friday evening</div>
-        <div className="serif italic" style={{ fontSize: 24, fontWeight: 400, color: 'var(--ink)', lineHeight: 1.1 }}>
-          Good evening, friend.
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
-          {[0, 1, 2, 3, 4, 5].map(i => (
-            <MoodFace key={i} index={i as 0 | 1 | 2 | 3 | 4 | 5} size={28} active={i === 3} />
-          ))}
-        </div>
-      </InkCard>
-
-      <InkCard hand handIntensity={2.4} variant="note" tilt={-3.5} style={{
-        position: 'absolute', top: 360, left: 'auto', right: 10,
-        padding: 16, width: 220,
-        background: 'color-mix(in oklab, var(--accent-wash) 50%, var(--paper))',
-        zIndex: 3,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <Icon.Sparkle size={14} />
-          <div className="eyebrow">Pattern</div>
-        </div>
-        <div className="hand" style={{ fontSize: 19, color: 'var(--ink)', lineHeight: 1.25 }}>
-          you&apos;ve been kinder to yourself this week.
-        </div>
-      </InkCard>
-    </div>
-  );
-}
 
 // ─── Feature journal ──────────────────────────────────────────────────────────
 
@@ -203,19 +163,7 @@ export default function Page() {
               <span className="eyebrow">A quiet companion</span>
             </div>
 
-            <h1 className="serif" style={{
-              fontSize: 'clamp(40px, 4.6vw, 62px)',
-              fontWeight: 400, lineHeight: 1.08,
-              marginBottom: 28, letterSpacing: '-0.02em',
-            }}>
-              A small, kind place to <em style={{ fontStyle: 'italic' }}>figure out</em> how you actually feel.
-            </h1>
-
-            <p style={{ fontSize: 18, color: 'var(--ink-soft)', maxWidth: 520, lineHeight: 1.55, marginBottom: 32 }}>
-              Solace is a wellness journal for moods, cycles, and the small
-              notes you&apos;d write to yourself on a Tuesday afternoon. Made by
-              hand, kept by you, never optimized.
-            </p>
+            <HeroText />
 
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <Link href="/app" className="ink-btn ink-btn--primary">
@@ -234,6 +182,14 @@ export default function Page() {
           <HeroVisual />
         </div>
       </section>
+
+      <HowItWorks />
+
+      <GetsToKnowYou />
+
+      <JournalMoment />
+
+      <HumanQuote />
 
       {/* ─── Belief strip ──────────────────────────────────── */}
       <section style={{ padding: '0 40px 72px', maxWidth: 1080, margin: '0 auto' }}>
@@ -335,41 +291,9 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ─── CTA ───────────────────────────────────────────── */}
-      <section style={{ padding: '0 40px 96px', maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-        <h2 className="serif italic" style={{ fontSize: 'clamp(34px, 4vw, 52px)', fontWeight: 400, lineHeight: 1.1, marginBottom: 16 }}>
-          Come in. The light is soft.
-        </h2>
-        <p style={{ color: 'var(--ink-soft)', fontSize: 17, maxWidth: 520, margin: '0 auto 28px' }}>
-          A few minutes of honesty with yourself. That&apos;s the whole pitch.
-        </p>
-        <Link href="/app" className="ink-btn ink-btn--primary">
-          Start your first page
-          <Icon.ChevronRight size={14} />
-        </Link>
-        <div className="hand" style={{ marginTop: 16, fontSize: 18, color: 'var(--ink-muted)' }}>
-          no email, no card.
-        </div>
-      </section>
+      <FinalCTA />
 
-      {/* ─── Footer ────────────────────────────────────────── */}
-      <footer style={{
-        borderTop: '1px dashed var(--ink-border)',
-        padding: '28px 40px', maxWidth: 1180, margin: '0 auto',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        color: 'var(--ink-muted)', fontSize: 13, flexWrap: 'wrap', gap: 16,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="serif italic" style={{ fontSize: 18, color: 'var(--ink-soft)' }}>Solace</span>
-          <span>· a quiet companion</span>
-        </div>
-        <div style={{ display: 'flex', gap: 22 }}>
-          <a href="#" style={{ color: 'inherit' }}>About</a>
-          <a href="#" style={{ color: 'inherit' }}>Privacy</a>
-          <a href="#" style={{ color: 'inherit' }}>Contact</a>
-        </div>
-        <div className="hand" style={{ fontSize: 17 }}>made by hand · with care.</div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

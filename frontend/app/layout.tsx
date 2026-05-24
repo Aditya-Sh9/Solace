@@ -48,6 +48,7 @@ export default function RootLayout({
       data-theme="sage"
       data-mode="light"
       className={`${dmSans.variable} ${fraunces.variable} ${caveat.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
     >
       <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         {/* eslint-disable-next-line react/no-danger */}

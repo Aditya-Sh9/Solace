@@ -385,6 +385,111 @@ p { margin: 0; }
   * { animation-duration: 0.001ms !important; transition-duration: 200ms !important; }
 }
 
+/* ── Section layout utilities ────────────────────────────────────────────── */
+
+.section-surface { background: var(--surface); }
+.section-bg      { background: var(--bg); }
+
+.section-pad {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+/* ── HowItWorks layout ──────────────────────────────────────────────────── */
+
+.how-it-works-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.how-it-works-step {
+  flex: 1;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.how-it-works-arrow {
+  display: flex;
+  align-items: center;
+  padding-top: 10px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+@media (max-width: 720px) {
+  .section-pad {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  .how-it-works-steps {
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .how-it-works-step {
+    width: 100%;
+    padding: 0;
+  }
+
+  .how-it-works-arrow {
+    display: none;
+  }
+}
+
+/* ── GetsToKnowYou cards ─────────────────────────────────────────────────── */
+
+.knows-you-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  text-align: left;
+}
+
+@media (max-width: 720px) {
+  .knows-you-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── LandingFooter ───────────────────────────────────────────────────────── */
+
+.landing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.landing-footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.landing-footer-links a {
+  color: var(--ink-soft);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.landing-footer-links a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .landing-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+}
+
 /* Scrollbars: thin, warm */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 4px; }
