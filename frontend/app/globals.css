@@ -490,6 +490,22 @@ p { margin: 0; }
   }
 }
 
+/* ── App shell nav visibility ──────────────────────────────────────────── */
+
+.desktop-nav { display: flex; }
+.mobile-nav  { display: none; }
+
+.app-main {
+  flex: 1;
+  padding: 24px 40px;
+}
+
+@media (max-width: 767px) {
+  .desktop-nav { display: none; }
+  .mobile-nav  { display: flex; }
+  .app-main    { padding: 20px 16px 88px; }
+}
+
 /* Scrollbars: thin, warm */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 4px; }

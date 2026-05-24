@@ -26,8 +26,13 @@ export { default as InkCircleSelection } from './InkCircleSelection';
 export { default as PageTearOverlay } from './PageTearOverlay';
 export { default as ScribbleOut } from './ScribbleOut';
 
+export { default as InkInput } from './InkInput';
+export type { InkInputProps } from './InkInput';
+
 export { default as NavPill } from './NavPill';
 export type { NavItem } from './NavPill';
+
+export { default as BottomNav } from './BottomNav';
 
 export { default as TopNav } from './TopNav';
 export type { TopNavProps } from './TopNav';
