@@ -22,6 +22,8 @@ export interface CheckIn {
   sunlightMinutes: number | null;
   stressLevel: 1 | 2 | 3 | 4 | 5 | null;
   notes: string | null;
+  symptoms: string[];
+  foodGroups: string[];
   createdAt: string;
 }
 

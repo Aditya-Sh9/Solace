@@ -62,6 +62,7 @@ model CheckIn {
   stressLevel      Int?      @map("stress_level")     // 1–5
   notes            String?
   symptoms         String[]  // free-text tags from symptom chips
+  foodGroups       String[]  @map("food_groups")     // food groups eaten today (multi-select chips)
   deletedAt        DateTime? @map("deleted_at")       // soft delete
   createdAt        DateTime  @default(now()) @map("created_at")
 

@@ -3,21 +3,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import InkCard from '@/src/components/ui/InkCard'
 import InkButton from '@/src/components/ui/InkButton'
+import InsightCard from '@/src/components/ui/InsightCard'
 import { apiFetch } from '@/src/lib/api-client'
 import type { StepProps } from '../OnboardingShell'
-import type { InsightCard } from '@/src/types/onboarding'
+import type { InsightCard as InsightCardData } from '@/src/types/onboarding'
 
 interface OnboardingResponse {
   profile:  unknown
-  insights: InsightCard[]
+  insights: InsightCardData[]
 }
 
 export default function StepComplete({ data }: StepProps) {
   const router   = useRouter()
   const hasFired = useRef(false)
-  const [insights, setInsights] = useState<InsightCard[]>([])
+  const [insights, setInsights] = useState<InsightCardData[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
 
@@ -80,29 +80,11 @@ export default function StepComplete({ data }: StepProps) {
       {!loading && !error && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
           {insights.map((insight, i) => (
-            <motion.div
+            <InsightCard
               key={insight.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.15, duration: 0.4, ease: 'easeOut' }}
-            >
-              <InkCard variant="note" style={{ padding: 24 }}>
-                <p style={{
-                  fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                  textTransform: 'uppercase', color: 'var(--accent)', margin: '0 0 8px',
-                }}>
-                  {insight.type === 'ENCOURAGEMENT' ? 'A note' : 'Worth noticing'}
-                </p>
-                <h3 className="serif" style={{
-                  fontSize: 19, fontWeight: 500, margin: '0 0 10px', color: 'var(--ink)',
-                }}>
-                  {insight.title}
-                </h3>
-                <p style={{ margin: 0, fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-                  {insight.body}
-                </p>
-              </InkCard>
-            </motion.div>
+              {...insight}
+              delay={i * 0.15}
+            />
           ))}
 
           <motion.div

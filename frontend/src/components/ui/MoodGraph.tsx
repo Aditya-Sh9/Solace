@@ -16,13 +16,14 @@ function rand32(seed: number) {
 }
 
 interface MoodGraphProps {
-  data: number[];
-  width?: number;
+  data:    number[];
+  energy?: number[];   // optional second series drawn in --accent-soft
+  width?:  number;
   height?: number;
   wobble?: number;
 }
 
-export default function MoodGraph({ data, width = 600, height = 240, wobble = 0.2 }: MoodGraphProps) {
+export default function MoodGraph({ data, energy, width = 600, height = 240, wobble = 0.2 }: MoodGraphProps) {
   const padX = 28;
   const padTop = 18;
   const padBottom = 18;
@@ -39,19 +40,18 @@ export default function MoodGraph({ data, width = 600, height = 240, wobble = 0.
     v,
   })), [data, width, height]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const path = useMemo(() => {
-    if (pts.length === 0) return '';
-    const rng = rand32(pts.length * 97);
+  const buildPath = (pointSet: { x: number; y: number }[], seed: number) => {
+    if (pointSet.length === 0) return '';
+    const rng = rand32(seed);
     const j = (scale: number) => (rng() - 0.5) * 2 * scale;
-    const f = (n: number) => n.toFixed(3); // normalize float→string across engines
-
-    let d = `M ${f(pts[0].x + j(5 * wobble))} ${f(pts[0].y + j(3 * wobble))}`;
+    const f = (n: number) => n.toFixed(3);
+    let d = `M ${f(pointSet[0].x + j(5 * wobble))} ${f(pointSet[0].y + j(3 * wobble))}`;
     const tension = 0.5;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[Math.max(0, i - 1)];
-      const p1 = pts[i];
-      const p2 = pts[i + 1];
-      const p3 = pts[Math.min(pts.length - 1, i + 2)];
+    for (let i = 0; i < pointSet.length - 1; i++) {
+      const p0 = pointSet[Math.max(0, i - 1)];
+      const p1 = pointSet[i];
+      const p2 = pointSet[i + 1];
+      const p3 = pointSet[Math.min(pointSet.length - 1, i + 2)];
       const cp1x = p1.x + (p2.x - p0.x) * tension / 2 + j(5 * wobble);
       const cp1y = p1.y + (p2.y - p0.y) * tension / 2 + j(3 * wobble);
       const cp2x = p2.x - (p3.x - p1.x) * tension / 2 + j(5 * wobble);
@@ -61,7 +61,19 @@ export default function MoodGraph({ data, width = 600, height = 240, wobble = 0.
       d += ` C ${f(cp1x)} ${f(cp1y)}, ${f(cp2x)} ${f(cp2y)}, ${f(ex)} ${f(ey)}`;
     }
     return d;
-  }, [pts, wobble]);
+  };
+
+  const path = useMemo(() => buildPath(pts, pts.length * 97), [pts, wobble]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const energyPts = useMemo(() => (energy ?? []).map((v, i) => ({
+    x: padX + i * step,
+    y: baseline - ((v / 5) - 0.5) * innerH * amp,
+  })), [energy, width, height]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const energyPath = useMemo(
+    () => buildPath(energyPts, energyPts.length * 131),
+    [energyPts, wobble], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const refs = [1, 2.5, 4];
 
@@ -88,6 +100,11 @@ export default function MoodGraph({ data, width = 600, height = 240, wobble = 0.
             stroke="var(--ink-faint)" strokeWidth="0.7" strokeDasharray="3 5" opacity="0.55" />
         );
       })}
+      {energyPath && (
+        <path d={energyPath} fill="none" stroke="var(--accent-soft)" strokeWidth="1.8"
+          strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6 3"
+          filter="url(#ink-soften)" opacity="0.75" />
+      )}
       <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2.6"
         strokeLinecap="round" strokeLinejoin="round" filter="url(#ink-soften)" />
       {pts.map((p, i) => {

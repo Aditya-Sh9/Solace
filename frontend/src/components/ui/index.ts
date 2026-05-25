@@ -29,6 +29,9 @@ export { default as ScribbleOut } from './ScribbleOut';
 export { default as InkInput } from './InkInput';
 export type { InkInputProps } from './InkInput';
 
+export { default as InsightCard } from './InsightCard';
+export type { InsightCardProps, InsightType } from './InsightCard';
+
 export { default as NavPill } from './NavPill';
 export type { NavItem } from './NavPill';
 
