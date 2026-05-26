@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/src/hooks/use-auth'
+import InkCard from '@/src/components/ui/InkCard'
 import InkButton from '@/src/components/ui/InkButton'
+import { Icon } from '@/src/components/ui/Icons'
 import MoodPickerRow  from './MoodPickerRow'
 import EnergyRow      from './EnergyRow'
 import SleepRow       from './SleepRow'
@@ -29,6 +32,7 @@ const DEFAULT_FORM: CheckInFormData = {
 }
 
 export default function CheckInPage() {
+  const router = useRouter()
   const { loading: authLoading } = useAuth()
   const hasFetched = useRef(false)
   const [form,    setForm]    = useState<CheckInFormData>(DEFAULT_FORM)
@@ -37,7 +41,6 @@ export default function CheckInPage() {
   const [success, setSuccess] = useState(false)
   const [isEdit,  setIsEdit]  = useState(false)
 
-  // Pre-fill if already checked in today — wait for auth session to load first
   useEffect(() => {
     if (authLoading) return
     if (hasFetched.current) return
@@ -47,15 +50,15 @@ export default function CheckInPage() {
       if (!data) return
       setIsEdit(true)
       setForm({
-        moodScore:       data.moodScore,
-        energyScore:     data.energyScore,
-        sleepHours:      data.sleepHours ?? DEFAULT_FORM.sleepHours,
-        waterGlasses:    data.waterGlasses ?? DEFAULT_FORM.waterGlasses,
+        moodScore:       data.moodScore   ?? DEFAULT_FORM.moodScore,
+        energyScore:     data.energyScore ?? DEFAULT_FORM.energyScore,
+        sleepHours:      data.sleepHours      ?? DEFAULT_FORM.sleepHours,
+        waterGlasses:    data.waterGlasses    ?? DEFAULT_FORM.waterGlasses,
         sunlightMinutes: data.sunlightMinutes ?? DEFAULT_FORM.sunlightMinutes,
-        stressLevel:     data.stressLevel ?? DEFAULT_FORM.stressLevel,
-        symptoms:        data.symptoms ?? [],
-        foodGroups:      data.foodGroups ?? [],
-        notes:           data.notes ?? '',
+        stressLevel:     data.stressLevel     ?? DEFAULT_FORM.stressLevel,
+        symptoms:        data.symptoms        ?? [],
+        foodGroups:      data.foodGroups      ?? [],
+        notes:           data.notes           ?? '',
       })
     })
   }, [authLoading])
@@ -68,112 +71,75 @@ export default function CheckInPage() {
     setError(null)
     const { error } = await saveCheckIn(form)
     setLoading(false)
-    if (error) {
-      setError(error)
-      return
-    }
+    if (error) { setError(error); return }
     setSuccess(true)
   }
 
   if (success) return <SaveSuccess />
 
-  const today = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
+  const _now = new Date()
+  const _months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const shortDate = `${_months[_now.getMonth()]} ${_now.getDate()}`
 
   return (
-    <div className="checkin-page">
-      {/* Header */}
-      <div>
-        <p style={{
-          fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-          textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 6px',
-        }}>
-          {today}
-        </p>
-        <h1 className="serif" style={{
-          fontSize: 28, fontWeight: 500, margin: 0,
-          color: 'var(--ink)', letterSpacing: '-0.01em',
-        }}>
-          {isEdit ? 'Update your entry' : 'How was today?'}
-        </h1>
+    <div className="checkin-page" style={{ maxWidth: 760 }}>
+
+      {/* Header — date eyebrow left, handwritten date right */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20 }}>
+        <div style={{ flex: 1 }}>
+          <div className="eyebrow" style={{ marginBottom: 6 }}>Today, just for a second</div>
+          <h2 className="serif" style={{
+            fontSize: 32, fontWeight: 400, fontStyle: 'italic',
+            margin: 0, color: 'var(--ink)',
+          }}>
+            {isEdit ? 'Still with you.' : 'How are you, really?'}
+          </h2>
+        </div>
+        <div className="hand" style={{ fontSize: 20, color: 'var(--ink-muted)', transform: 'rotate(-3deg)' }}>
+          {shortDate}
+        </div>
       </div>
 
-      {/* Mood picker */}
-      <div className="checkin-row">
-        <MoodPickerRow
-          value={form.moodScore}
-          onChange={v => patch({ moodScore: v })}
-        />
-      </div>
+      {/* Mood picker — InkCard applied inside MoodPickerRow */}
+      <MoodPickerRow
+        value={form.moodScore}
+        onChange={v => patch({ moodScore: v })}
+      />
 
-      {/* Energy */}
-      <div className="checkin-row">
-        <EnergyRow
-          value={form.energyScore}
-          onChange={v => patch({ energyScore: v })}
-        />
-      </div>
+      {/* Symptoms — InkCard applied inside ChipMultiSelect */}
+      <ChipMultiSelect
+        label="Body & mind notes"
+        subtitle="Tap anything that's true today. None of this is a diagnosis — just notes for you."
+        options={SYMPTOM_OPTIONS}
+        selected={form.symptoms}
+        onChange={v => patch({ symptoms: v })}
+      />
 
-      {/* Sleep */}
-      <div className="checkin-row">
-        <SleepRow
-          value={form.sleepHours ?? 0}
-          onChange={v => patch({ sleepHours: v })}
-        />
-      </div>
+      {/* Sliders — grouped in one InkCard */}
+      <InkCard hand handIntensity={2.4} style={{ padding: 28 }}>
+        <div className="eyebrow" style={{ marginBottom: 18 }}>The little things</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+          <EnergyRow      value={form.energyScore}          onChange={v => patch({ energyScore: v })} />
+          <SleepRow       value={form.sleepHours    ?? 0}   onChange={v => patch({ sleepHours: v })} />
+          <WaterRow       value={form.waterGlasses  ?? 0}   onChange={v => patch({ waterGlasses: v })} />
+          <SunlightRow    value={form.sunlightMinutes ?? 0} onChange={v => patch({ sunlightMinutes: v })} />
+          <StressRow      value={form.stressLevel   ?? 1}   onChange={v => patch({ stressLevel: v })} />
+        </div>
+      </InkCard>
 
-      {/* Water */}
-      <div className="checkin-row">
-        <WaterRow
-          value={form.waterGlasses ?? 0}
-          onChange={v => patch({ waterGlasses: v })}
-        />
-      </div>
+      {/* Food groups — InkCard applied inside ChipMultiSelect */}
+      <ChipMultiSelect
+        label="What did you eat today?"
+        options={FOOD_GROUP_OPTIONS}
+        selected={form.foodGroups}
+        onChange={v => patch({ foodGroups: v })}
+      />
 
-      {/* Sunlight */}
-      <div className="checkin-row">
-        <SunlightRow
-          value={form.sunlightMinutes ?? 0}
-          onChange={v => patch({ sunlightMinutes: v })}
-        />
-      </div>
-
-      {/* Stress */}
-      <div className="checkin-row">
-        <StressRow
-          value={form.stressLevel ?? 1}
-          onChange={v => patch({ stressLevel: v })}
-        />
-      </div>
-
-      {/* Symptoms */}
-      <div className="checkin-row">
-        <ChipMultiSelect
-          label="Anything you've been feeling?"
-          options={SYMPTOM_OPTIONS}
-          selected={form.symptoms}
-          onChange={v => patch({ symptoms: v })}
-        />
-      </div>
-
-      {/* Food groups */}
-      <div className="checkin-row">
-        <ChipMultiSelect
-          label="What did you eat today?"
-          options={FOOD_GROUP_OPTIONS}
-          selected={form.foodGroups}
-          onChange={v => patch({ foodGroups: v })}
-        />
-      </div>
-
-      {/* Notes */}
-      <div className="checkin-row">
-        <NotesField
-          value={form.notes}
-          onChange={v => patch({ notes: v })}
-        />
-      </div>
+      {/* Notes — InkCard applied inside NotesField */}
+      <NotesField
+        value={form.notes}
+        onChange={v => patch({ notes: v })}
+      />
 
       {/* Error */}
       {error && (
@@ -181,11 +147,12 @@ export default function CheckInPage() {
       )}
 
       {/* Submit */}
-      <div style={{ paddingBottom: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingBottom: 32 }}>
+        <InkButton variant="ghost" onClick={() => router.push('/dashboard')}>Save & close</InkButton>
         <InkButton
           variant="primary"
+          icon={<Icon.Check size={16} />}
           onClick={handleSubmit}
-          style={{ width: '100%' }}
           disabled={loading}
         >
           {loading ? 'Saving…' : isEdit ? 'Update entry' : 'Save today\'s entry'}

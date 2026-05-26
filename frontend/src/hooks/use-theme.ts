@@ -28,8 +28,9 @@ export function useTheme(): UseThemeReturn {
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   const [mode,  setModeState]  = useState<ColorMode>(DEFAULT_MODE);
 
-  // Hydrate from localStorage on first client render
+  // Hydrate from localStorage on first client render — reading browser API is intentional
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(readLocal(STORAGE_KEY_THEME, DEFAULT_THEME) as ThemeId);
     setModeState(readLocal(STORAGE_KEY_MODE,  DEFAULT_MODE)  as ColorMode);
   }, []);

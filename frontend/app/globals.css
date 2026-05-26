@@ -492,8 +492,13 @@ p { margin: 0; }
 
 /* ── App shell nav visibility ──────────────────────────────────────────── */
 
-.desktop-nav { display: flex; }
-.mobile-nav  { display: none; }
+.desktop-nav {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.mobile-nav { display: none; }
 
 .app-main {
   flex: 1;

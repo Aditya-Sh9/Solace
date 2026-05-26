@@ -10,7 +10,7 @@ const OPTIONS = [
   { label: 'Skip for now',  value: false, tilt: -0.3 },
 ]
 
-export default function StepCycle({ data: _data, onNext, onBack, isFirst }: StepProps) {
+export default function StepCycle({ onNext, onBack, isFirst }: StepProps) {
   return (
     <StepFrame
       heading="One more thing — do you track your cycle?"

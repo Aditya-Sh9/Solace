@@ -21,10 +21,11 @@ export default function BottomNav() {
   return (
     <nav
       className="mobile-nav"
+      // No display property here — CSS .mobile-nav controls visibility:
+      //   desktop: display: none  |  mobile ≤767px: display: flex
       style={{
         position: 'fixed',
         bottom: 0, left: 0, right: 0,
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
         padding: '8px 4px 12px',

@@ -24,7 +24,8 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding')
+  const APP_ROUTES = ['/dashboard', '/checkin', '/journal', '/insights', '/wellness', '/settings', '/onboarding']
+  const isProtected = APP_ROUTES.some(r => pathname.startsWith(r))
   const isAuthRoute  = pathname.startsWith('/login')    || pathname.startsWith('/signup')
 
   if (!user && isProtected) {

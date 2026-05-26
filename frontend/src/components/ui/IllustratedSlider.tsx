@@ -25,7 +25,8 @@ export default function IllustratedSlider({
   unit = '',
 }: IllustratedSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const pct = ((value - min) / (max - min)) * 100;
+  const rawPct = ((value - min) / (max - min)) * 100
+  const pct = Number.isFinite(rawPct) ? Math.max(0, Math.min(100, rawPct)) : 0;
 
   const setFromMouse = (e: globalThis.MouseEvent) => {
     if (!trackRef.current) return;
@@ -68,12 +69,14 @@ export default function IllustratedSlider({
           <path d="M 4 7 Q 50 4 100 7 T 200 7 T 300 7 T 396 7"
             stroke="var(--ink-faint)" strokeWidth="1.4" fill="none" strokeLinecap="round" />
         </svg>
-        <svg width={`${pct}%`} height="14" viewBox={`0 0 ${Math.max(1, pct * 4)} 14`}
-          preserveAspectRatio="none"
-          style={{ position: 'absolute', top: 4, left: 0, pointerEvents: 'none', overflow: 'visible' }}>
-          <path d={`M 4 7 Q ${pct} 3 ${pct * 2} 7 T ${pct * 4} 7`}
-            stroke={color || 'var(--accent)'} strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        </svg>
+        {pct > 0 && (
+          <svg width={`${pct}%`} height="14" viewBox={`0 0 ${pct * 4} 14`}
+            preserveAspectRatio="none"
+            style={{ position: 'absolute', top: 4, left: 0, pointerEvents: 'none', overflow: 'visible' }}>
+            <path d={`M 4 7 Q ${pct} 3 ${pct * 2} 7 T ${pct * 4} 7`}
+              stroke={color || 'var(--accent)'} strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          </svg>
+        )}
         <div style={{
           position: 'absolute', top: '50%', left: `calc(${pct}% - 9px)`,
           width: 18, height: 18, transform: 'translateY(-50%)',

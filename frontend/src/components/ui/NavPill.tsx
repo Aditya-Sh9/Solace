@@ -1,8 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import HandDrawnFrame from './HandDrawnFrame';
+
+function stableHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 8999) + 1;
+}
 
 export interface NavItem {
   id: string;
@@ -19,7 +25,8 @@ interface NavPillProps {
 
 export default function NavPill({ item, active, onClick, tilt = 0 }: NavPillProps) {
   const [hover, setHover] = useState(false);
-  const seed = useMemo(() => Math.floor(Math.random() * 9999), []);
+  const id   = useId();
+  const seed = useMemo(() => stableHash(item.id + id), [item.id, id]);
   const fill   = active ? 'var(--accent-wash)' : hover ? 'var(--surface)' : 'transparent';
   const stroke = active ? 'var(--accent)' : 'var(--ink-soft)';
 

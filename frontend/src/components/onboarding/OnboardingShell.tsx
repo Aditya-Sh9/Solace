@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ComponentType } from 'react'
 import ProgressBar from './ProgressBar'
@@ -37,16 +37,16 @@ const variants = {
 export default function OnboardingShell() {
   const [step, setStep] = useState(0)
   const [data, setData] = useState<OnboardingFormData>({})
-  const dir = useRef(1)
+  const [dir,  setDir]  = useState(1)
 
   function goNext(updates: Partial<OnboardingFormData>) {
-    dir.current = 1
+    setDir(1)
     setData(prev => ({ ...prev, ...updates }))
     setStep(prev => Math.min(prev + 1, STEPS.length - 1))
   }
 
   function goBack() {
-    dir.current = -1
+    setDir(-1)
     setStep(prev => Math.max(prev - 1, 0))
   }
 
@@ -65,10 +65,10 @@ export default function OnboardingShell() {
         flex: 1, display: 'flex', alignItems: 'center',
         justifyContent: 'center', marginTop: 40, overflow: 'hidden',
       }}>
-        <AnimatePresence mode="wait" custom={dir.current}>
+        <AnimatePresence mode="wait" custom={dir}>
           <motion.div
             key={step}
-            custom={dir.current}
+            custom={dir}
             variants={variants}
             initial="enter"
             animate="center"

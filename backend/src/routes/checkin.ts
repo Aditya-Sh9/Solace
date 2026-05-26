@@ -22,13 +22,21 @@ const checkInSchema = z.object({
 router.post('/', requireAuth, async (req, res) => {
   const parsed = checkInSchema.safeParse(req.body)
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() })
+    res.status(400).json({ error: 'Something looks off with that entry — check your inputs and try again.' })
     return
   }
 
-  const { userId } = req.user!
-  const today      = getTodayUTC()
-  const data       = parsed.data
+  const { userId, email } = req.user!
+  const today             = getTodayUTC()
+  const data              = parsed.data
+
+  // Ensure the public.users row exists — Supabase auth.users ≠ public.users.
+  // This is a no-op when onboarding has run; it's a safety net when it hasn't.
+  await prisma.user.upsert({
+    where:  { id: userId },
+    update: {},
+    create: { id: userId, email },
+  })
 
   const checkIn = await prisma.checkIn.upsert({
     where:  { userId_date: { userId, date: today } },

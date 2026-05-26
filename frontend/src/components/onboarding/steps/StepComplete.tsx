@@ -56,10 +56,10 @@ export default function StepComplete({ data }: StepProps) {
         fontSize: 32, fontWeight: 500, letterSpacing: '-0.01em',
         lineHeight: 1.2, margin: '0 0 10px', color: 'var(--ink)',
       }}>
-        We're ready.
+        We&apos;re ready.
       </h2>
       <p style={{ color: 'var(--ink-soft)', fontSize: 15, margin: '0 0 32px', lineHeight: 1.55 }}>
-        Based on what you've shared, there might be something worth noticing.
+        Based on what you&apos;ve shared, there might be something worth noticing.
       </p>
 
       {loading && (

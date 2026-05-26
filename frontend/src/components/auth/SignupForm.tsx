@@ -51,7 +51,7 @@ export default function SignupForm() {
             We sent a confirmation link to <strong style={{ color: 'var(--ink)' }}>{sentEmail}</strong>.
           </p>
           <p style={{ color: 'var(--ink-soft)', fontSize: 15, lineHeight: 1.55, margin: 0 }}>
-            Open it when you're ready — we'll be here.
+            Open it when you&apos;re ready — we&apos;ll be here.
           </p>
         </div>
       </InkCard>
@@ -62,7 +62,7 @@ export default function SignupForm() {
     <InkCard style={{ padding: 32 }}>
       <div style={{ marginBottom: 28, textAlign: 'center' }}>
         <h1 className="serif" style={{ fontSize: 28, fontWeight: 500, margin: '0 0 8px' }}>
-          Let's begin.
+          Let&apos;s begin.
         </h1>
         <p style={{ color: 'var(--ink-soft)', fontSize: 15, margin: 0 }}>
           Just a few things to get started.

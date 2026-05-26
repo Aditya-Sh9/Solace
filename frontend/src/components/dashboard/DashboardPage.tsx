@@ -6,7 +6,6 @@ import { getDashboard } from '@/src/lib/api/checkin'
 import type { DashboardData } from '@/src/types/checkin'
 
 import Greeting           from './Greeting'
-import CheckInTodayCTA    from './CheckInTodayCTA'
 import MoodHistoryGraph   from './MoodHistoryGraph'
 import QuickStatsRow      from './QuickStatsRow'
 import StreakCounter       from './StreakCounter'
@@ -45,15 +44,12 @@ export default function DashboardPage() {
   if (loading) return <DashboardSkeleton />
   if (error)   return <DashboardError onRetry={() => { hasFetched.current = false; fetchData() }} />
 
-  const { today, history, streak, stats } = data!
+  const { history, streak, stats } = data!
 
   return (
     <div className="dashboard-grid">
-      {/* Greeting */}
-      <Greeting name={name} hasCheckedIn={today !== null} />
-
-      {/* Check-in CTA — only shown if not yet checked in today */}
-      {today === null && <CheckInTodayCTA />}
+      {/* Greeting — embeds today's check-in + journal CTA buttons */}
+      <Greeting name={name} />
 
       {/* Mood + energy history graph */}
       <MoodHistoryGraph history={history} />

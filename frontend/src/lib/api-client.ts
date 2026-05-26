@@ -25,7 +25,8 @@ export async function apiFetch<T>(
     const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      return { data: null, error: body.error ?? `Request failed (${res.status})` }
+      const errMsg = typeof body.error === 'string' ? body.error : `Request failed (${res.status})`
+      return { data: null, error: errMsg }
     }
 
     const body = await res.json()

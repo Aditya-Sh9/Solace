@@ -11,7 +11,7 @@ import { useTheme } from '@/src/hooks/use-theme'
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const { theme, mode, setTheme, setMode } = useTheme()
 
   const screen      = pathname.split('/')[1] || 'dashboard'
@@ -26,20 +26,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           profileName={profileName}
           themePicker={<ThemePicker theme={theme} mode={mode} setTheme={setTheme} setMode={setMode} />}
         />
-      </div>
-
-      {/* TEMP: logout button for testing */}
-      <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 999 }}>
-        <button
-          onClick={() => signOut().then(() => router.push('/login'))}
-          style={{
-            background: 'var(--surface)', border: '1px solid var(--ink-border)',
-            borderRadius: 8, padding: '6px 12px', fontSize: 13,
-            color: 'var(--ink-muted)', cursor: 'pointer',
-          }}
-        >
-          Log out
-        </button>
       </div>
 
       <main className="app-main">

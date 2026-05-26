@@ -1,8 +1,14 @@
 'use client';
 
 import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import HandDrawnFrame from './HandDrawnFrame';
+
+function stableHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 8999) + 1;
+}
 
 function PaperTextureLayer() {
   return (
@@ -32,6 +38,8 @@ export interface InkCardProps {
   handFill?: string;
   handRadius?: number;
   handDashed?: boolean;
+  /** Stable seed for HandDrawnFrame shape — pass a constant to guarantee SSR/client match. */
+  handSeed?: number;
 }
 
 export default function InkCard({
@@ -49,8 +57,10 @@ export default function InkCard({
   handFill,
   handRadius,
   handDashed = false,
+  handSeed,
 }: InkCardProps) {
-  const seed = useMemo(() => Math.floor(Math.random() * 9999), []);
+  const id   = useId();
+  const seed = useMemo(() => handSeed ?? stableHash(id), [handSeed, id]);
 
   let resolvedFill = handFill;
   if (hand && !resolvedFill) {

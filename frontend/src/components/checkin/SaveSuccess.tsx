@@ -56,7 +56,7 @@ export default function SaveSuccess() {
         animate={{ opacity: 1 }}
         transition={{ delay: shouldReduce ? 0 : 0.75, duration: 0.35, ease: 'easeOut' }}
       >
-        We'll keep an eye on it with you.
+        We&apos;ll keep an eye on it with you.
       </motion.p>
     </div>
   )

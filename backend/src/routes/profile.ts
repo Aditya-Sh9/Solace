@@ -29,7 +29,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.patch('/', requireAuth, async (req, res) => {
   const parsed = patchSchema.safeParse(req.body)
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() })
+    res.status(400).json({ error: 'Something looks off with that update — please check your inputs.' })
     return
   }
 

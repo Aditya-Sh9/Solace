@@ -1,5 +1,7 @@
 'use client'
 
+import InkCard from '@/src/components/ui/InkCard'
+
 interface NotesFieldProps {
   value:    string
   onChange: (v: string) => void
@@ -7,13 +9,8 @@ interface NotesFieldProps {
 
 export default function NotesField({ value, onChange }: NotesFieldProps) {
   return (
-    <div>
-      <p style={{
-        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-        textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 10px',
-      }}>
-        Anything else?
-      </p>
+    <InkCard hand handIntensity={2.4} style={{ padding: 28 }}>
+      <div className="eyebrow" style={{ marginBottom: 12 }}>One line, if you want</div>
       <textarea
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -32,6 +29,6 @@ export default function NotesField({ value, onChange }: NotesFieldProps) {
         onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent-soft)' }}
         onBlur={e =>  { e.currentTarget.style.borderColor = 'var(--ink-border)' }}
       />
-    </div>
+    </InkCard>
   )
 }

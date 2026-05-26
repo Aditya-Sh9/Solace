@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 // ─── Wobbly circle ────────────────────────────────────────────────────────────
 
 function WobblyCircle({ d, number }: { d: string; number: string }) {

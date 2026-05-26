@@ -20,7 +20,7 @@ export default function CheckInTodayCTA() {
               How are you feeling?
             </h2>
             <p style={{ margin: '6px 0 0', fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.4 }}>
-              Whenever you're ready, we're here.
+              Whenever you&apos;re ready, we&apos;re here.
             </p>
           </div>
           <svg width={28} height={28} viewBox="0 0 24 24" fill="none"

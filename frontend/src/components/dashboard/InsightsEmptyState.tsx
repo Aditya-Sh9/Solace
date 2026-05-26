@@ -15,7 +15,7 @@ export default function InsightsEmptyState() {
               margin: '0 0 6px', fontSize: 15, fontWeight: 500,
               color: 'var(--ink)', lineHeight: 1.4,
             }}>
-              We're still listening.
+              We&apos;re still listening.
             </p>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.55 }}>
               A few more check-ins and patterns will start to surface.

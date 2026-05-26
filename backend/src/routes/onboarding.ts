@@ -21,7 +21,7 @@ const onboardingSchema = z.object({
 router.post('/', requireAuth, async (req, res) => {
   const parsed = onboardingSchema.safeParse(req.body)
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() })
+    res.status(400).json({ error: 'Something looks off with that submission — please check your inputs.' })
     return
   }
 
@@ -29,21 +29,32 @@ router.post('/', requireAuth, async (req, res) => {
           sleepHours, stressLevel, wellnessGoal, cycleTracking } = parsed.data
   const { userId, email } = req.user!
 
-  await prisma.user.upsert({
-    where:  { id: userId },
-    update: { ...(name && { name }) },
-    create: { id: userId, email, name },
-  })
+  const { profile, insights } = await prisma.$transaction(async (tx) => {
+    await tx.user.upsert({
+      where:  { id: userId },
+      update: { ...(name && { name }) },
+      create: { id: userId, email, name },
+    })
 
-  const profile = await prisma.userProfile.upsert({
-    where:  { userId },
-    update: { age, activityLevel, dietaryPattern, wellnessGoal, cycleTracking },
-    create: { userId, age, activityLevel, dietaryPattern, wellnessGoal, cycleTracking: cycleTracking ?? false },
-  })
+    const savedProfile = await tx.userProfile.upsert({
+      where:  { userId },
+      update: { age, activityLevel, dietaryPattern, wellnessGoal, cycleTracking },
+      create: { userId, age, activityLevel, dietaryPattern, wellnessGoal, cycleTracking: cycleTracking ?? false },
+    })
 
-  const drafts   = generateFirstInsight({ symptoms, dietaryPattern, stressLevel, sleepHours, activityLevel })
-  const insights = await prisma.insight.createManyAndReturn({
-    data: drafts.map(d => ({ ...d, userId })),
+    // Skip insight generation if insights already exist for this user (idempotency)
+    const existingCount = await tx.insight.count({ where: { userId } })
+    if (existingCount > 0) {
+      const existingInsights = await tx.insight.findMany({ where: { userId } })
+      return { profile: savedProfile, insights: existingInsights }
+    }
+
+    const drafts          = generateFirstInsight({ symptoms, dietaryPattern, stressLevel, sleepHours, activityLevel })
+    const createdInsights = await tx.insight.createManyAndReturn({
+      data: drafts.map(d => ({ ...d, userId })),
+    })
+
+    return { profile: savedProfile, insights: createdInsights }
   })
 
   res.json({ data: { profile, insights } })

@@ -1,15 +1,17 @@
 'use client'
 
+import InkCard from '@/src/components/ui/InkCard'
 import Chip from '@/src/components/ui/Chip'
 
 interface ChipMultiSelectProps {
   label:     string
+  subtitle?: string
   options:   readonly string[]
   selected:  string[]
   onChange:  (selected: string[]) => void
 }
 
-export default function ChipMultiSelect({ label, options, selected, onChange }: ChipMultiSelectProps) {
+export default function ChipMultiSelect({ label, subtitle, options, selected, onChange }: ChipMultiSelectProps) {
   const toggle = (option: string) => {
     onChange(
       selected.includes(option)
@@ -19,13 +21,13 @@ export default function ChipMultiSelect({ label, options, selected, onChange }: 
   }
 
   return (
-    <div>
-      <p style={{
-        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-        textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 12px',
-      }}>
-        {label}
-      </p>
+    <InkCard hand handIntensity={2.4} style={{ padding: 28 }}>
+      <div className="eyebrow" style={{ marginBottom: subtitle ? 4 : 16 }}>{label}</div>
+      {subtitle && (
+        <p style={{ fontSize: 14, color: 'var(--ink-muted)', margin: '0 0 16px', lineHeight: 1.55 }}>
+          {subtitle}
+        </p>
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {options.map((option, i) => (
           <Chip
@@ -38,6 +40,6 @@ export default function ChipMultiSelect({ label, options, selected, onChange }: 
           </Chip>
         ))}
       </div>
-    </div>
+    </InkCard>
   )
 }
