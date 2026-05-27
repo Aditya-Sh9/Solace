@@ -10,7 +10,7 @@ router.get('/', requireAuth, async (req, res) => {
   const { userId } = req.user!
   const today      = getTodayUTC()
 
-  const [todayEntry, history, allDates] = await Promise.all([
+  const [todayEntry, history, allDates, recentInsights] = await Promise.all([
     prisma.checkIn.findFirst({
       where: { userId, date: today, deletedAt: null },
     }),
@@ -25,12 +25,17 @@ router.get('/', requireAuth, async (req, res) => {
       orderBy: { date: 'desc' },
       take:    400,
     }),
+    prisma.insight.findMany({
+      where:   { userId },
+      orderBy: { createdAt: 'desc' },
+      take:    3,
+    }),
   ])
 
   const streak = calculateStreak(allDates.map(r => r.date))
   const stats  = computeWeeklyStats(history)
 
-  res.json({ data: { today: todayEntry, history, streak, stats } })
+  res.json({ data: { today: todayEntry, history, streak, stats, insights: recentInsights } })
 })
 
 export default router

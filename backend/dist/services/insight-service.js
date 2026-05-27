@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateFirstInsight = generateFirstInsight;
+// Generates warm welcome insights on onboarding — NOT nutrient detection.
+// The Phase 3 rule engine handles evidence-based pattern detection.
+// These insights exist to make the user feel seen on day zero.
 function generateFirstInsight(profile) {
     const insights = [];
     insights.push({
@@ -11,32 +14,30 @@ function generateFirstInsight(profile) {
     });
     const symptoms = (profile.symptoms ?? []).map(s => s.toLowerCase());
     const hasFatigue = symptoms.some(s => s.includes('fatigue') || s.includes('tired') || s.includes('energy'));
-    const plantBased = profile.dietaryPattern === 'VEGETARIAN' || profile.dietaryPattern === 'VEGAN';
     const highStress = (profile.stressLevel ?? 0) >= 4;
     const poorSleep = (profile.sleepHours ?? 8) < 6;
-    const lowActivity = profile.activityLevel === 'SEDENTARY' || profile.activityLevel === 'LIGHTLY_ACTIVE';
-    if (hasFatigue && plantBased) {
+    if (hasFatigue && poorSleep) {
         insights.push({
             type: 'RECOMMENDATION',
-            title: "Something worth keeping an eye on.",
-            body: "On a plant-based diet, B12 can quietly dip without obvious signs at first. Fatigue is one of the things it's connected to — though there are plenty of other explanations too. It might be worth noticing.",
-            flags: ['B12'],
+            title: "Something we noticed.",
+            body: "Sleep and energy have a way of pulling at each other. When rest is short, everything feels heavier — it's worth keeping an eye on as you settle in here.",
+            flags: [],
         });
     }
     else if (highStress && poorSleep) {
         insights.push({
             type: 'RECOMMENDATION',
             title: "There might be a pattern here.",
-            body: "Stress and sleep have a way of pulling at each other. When both are strained at once, magnesium is sometimes part of that — it's involved in how the nervous system quiets down. Something to hold loosely, not a conclusion.",
-            flags: ['MAGNESIUM'],
+            body: "Stress and sleep often travel together. When both feel strained at once, the body notices — even when the mind tries to push through. We'll watch this with you.",
+            flags: [],
         });
     }
-    else if (hasFatigue && lowActivity) {
+    else if (hasFatigue) {
         insights.push({
             type: 'RECOMMENDATION',
             title: "A quiet thing to notice.",
-            body: "Low energy and limited time outdoors sometimes travel together. Vitamin D is one piece of that puzzle — especially if sunlight has been scarce lately. Worth keeping in mind as we learn more.",
-            flags: ['VITAMIN_D'],
+            body: "Low energy can have a dozen different causes — some obvious, some easy to miss. The more you check in, the clearer the picture becomes. We're just getting started.",
+            flags: [],
         });
     }
     else {

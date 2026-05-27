@@ -11,6 +11,7 @@ const onboarding_1 = __importDefault(require("./routes/onboarding"));
 const profile_1 = __importDefault(require("./routes/profile"));
 const checkin_1 = __importDefault(require("./routes/checkin"));
 const dashboard_1 = __importDefault(require("./routes/dashboard"));
+const insights_1 = __importDefault(require("./routes/insights"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({ origin: env_1.env.FRONTEND_URL }));
 app.use(express_1.default.json({ limit: '100kb' }));
@@ -38,6 +39,14 @@ const checkinLimiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
     message: { data: null, error: 'Too many requests — please try again later.' },
 });
+// 5 insight requests per hour per IP (per-user 6h gate enforced in pipeline)
+const insightLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 60 * 60 * 1000,
+    limit: 5,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { data: null, error: 'Too many requests — please try again later.' },
+});
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'solace-backend' });
 });
@@ -45,6 +54,7 @@ app.use('/api/onboarding', onboardingLimiter, onboarding_1.default);
 app.use('/api/profile', profile_1.default);
 app.use('/api/checkin', checkinLimiter, checkin_1.default);
 app.use('/api/dashboard', dashboard_1.default);
+app.use('/api/insights', insightLimiter, insights_1.default);
 // Central error handler — catches all unhandled async errors thrown by routes
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err, req, res, _next) => {

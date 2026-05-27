@@ -6,6 +6,7 @@ import onboardingRouter from './routes/onboarding'
 import profileRouter    from './routes/profile'
 import checkInRouter    from './routes/checkin'
 import dashboardRouter  from './routes/dashboard'
+import insightsRouter   from './routes/insights'
 
 const app = express()
 
@@ -39,6 +40,15 @@ const checkinLimiter = rateLimit({
   message: { data: null, error: 'Too many requests — please try again later.' },
 })
 
+// 5 insight requests per hour per IP (per-user 6h gate enforced in pipeline)
+const insightLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { data: null, error: 'Too many requests — please try again later.' },
+})
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'solace-backend' })
 })
@@ -47,6 +57,7 @@ app.use('/api/onboarding', onboardingLimiter, onboardingRouter)
 app.use('/api/profile',    profileRouter)
 app.use('/api/checkin',    checkinLimiter, checkInRouter)
 app.use('/api/dashboard',  dashboardRouter)
+app.use('/api/insights',   insightLimiter, insightsRouter)
 
 // Central error handler — catches all unhandled async errors thrown by routes
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

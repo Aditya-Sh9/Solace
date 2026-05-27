@@ -37,9 +37,10 @@ model UserProfile {
   activityLevel   ActivityLevel?  @map("activity_level")
   dietaryPattern  DietaryPattern? @map("dietary_pattern")
   wellnessGoal    String?   @map("wellness_goal")
-  cycleTracking   Boolean   @default(false) @map("cycle_tracking")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  cycleTracking          Boolean   @default(false) @map("cycle_tracking")
+  lastInsightRefreshAt   DateTime? @map("last_insight_refresh_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

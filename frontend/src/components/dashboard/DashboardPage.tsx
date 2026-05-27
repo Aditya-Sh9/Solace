@@ -9,7 +9,7 @@ import Greeting           from './Greeting'
 import MoodHistoryGraph   from './MoodHistoryGraph'
 import QuickStatsRow      from './QuickStatsRow'
 import StreakCounter       from './StreakCounter'
-import InsightsEmptyState from './InsightsEmptyState'
+import DashboardInsights from './DashboardInsights'
 import DashboardSkeleton  from './DashboardSkeleton'
 import DashboardError     from './DashboardError'
 
@@ -44,7 +44,7 @@ export default function DashboardPage() {
   if (loading) return <DashboardSkeleton />
   if (error)   return <DashboardError onRetry={() => { hasFetched.current = false; fetchData() }} />
 
-  const { history, streak, stats } = data!
+  const { history, streak, stats, insights } = data!
 
   return (
     <div className="dashboard-grid">
@@ -60,8 +60,8 @@ export default function DashboardPage() {
       {/* Streak */}
       <StreakCounter streak={streak} />
 
-      {/* Insights — empty state in Phase 2 */}
-      <InsightsEmptyState />
+      {/* Insights — populated when available, empty state otherwise */}
+      <DashboardInsights initialInsights={insights ?? []} />
     </div>
   )
 }

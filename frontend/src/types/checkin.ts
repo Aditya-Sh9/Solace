@@ -1,4 +1,5 @@
 // Local types for check-in domain — not imported from shared/ (Phase 1 decision)
+import type { Insight } from './insight'
 
 export interface CheckInFormData {
   moodScore:       number        // 1–6
@@ -36,8 +37,9 @@ export interface QuickStats {
 }
 
 export interface DashboardData {
-  today:   CheckInRecord | null
-  history: CheckInRecord[]
-  streak:  number
-  stats:   QuickStats
+  today:    CheckInRecord | null
+  history:  CheckInRecord[]
+  streak:   number
+  stats:    QuickStats
+  insights: Insight[]
 }

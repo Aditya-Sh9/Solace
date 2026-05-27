@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Today',    icon: <Icon.Home    size={18} />, tilt: -1.2 },
   { id: 'checkin',   label: 'Check-in', icon: <Icon.Check   size={18} />, tilt:  0.8 },
   { id: 'journal',   label: 'Journal',  icon: <Icon.Journal size={18} />, tilt: -0.6 },
+  { id: 'insights',  label: 'Insights', icon: <Icon.Sparkle size={18} />, tilt: -0.5 },
   { id: 'wellness',  label: 'Wellness', icon: <Icon.Flower  size={18} />, tilt:  1.0 },
 ];
 

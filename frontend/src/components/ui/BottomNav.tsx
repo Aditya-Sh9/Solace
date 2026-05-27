@@ -9,10 +9,11 @@ const NAV_ITEMS: (NavItem & { href: string })[] = [
   { id: 'dashboard', label: 'Home',     href: '/dashboard', icon: <Icon.Home    size={20} /> },
   { id: 'checkin',   label: 'Check in', href: '/checkin',   icon: <Icon.Check   size={20} /> },
   { id: 'journal',   label: 'Journal',  href: '/journal',   icon: <Icon.Journal size={20} /> },
-  { id: 'insights',  label: 'Insights', href: '/insights',  icon: <Icon.Flower  size={20} /> },
+  { id: 'insights',  label: 'Insights', href: '/insights',  icon: <Icon.Sparkle size={20} /> },
+  { id: 'wellness',  label: 'Wellness', href: '/wellness',  icon: <Icon.Flower  size={20} /> },
 ]
 
-const TILTS = [-0.5, 0.4, -0.3, 0.5]
+const TILTS = [-0.5, 0.4, -0.3, 0.5, -0.4]
 
 export default function BottomNav() {
   const pathname = usePathname()
