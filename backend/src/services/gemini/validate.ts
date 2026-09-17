@@ -1,5 +1,5 @@
 // Banned phrases — case-insensitive. Any hit rejects that insight body.
-// Covers: prescriptive language, clinical register, soft-clinical phrasing (Correction D).
+// Covers: prescriptive language, clinical register, soft-clinical phrasing, causation language (Phase 4).
 const BANNED_PHRASES = [
   'optimize',
   'you should',
@@ -20,6 +20,11 @@ const BANNED_PHRASES = [
   'clinical',
   'supplement',
   'deficiency',
+  // causation language — patterns suggest correlation, never causation
+  'improves',
+  'causes',
+  'leads to',
+  'because of',
 ]
 
 export interface ToneResult {

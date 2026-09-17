@@ -5,13 +5,14 @@ import { useAuth } from '@/src/hooks/use-auth'
 import { getDashboard } from '@/src/lib/api/checkin'
 import type { DashboardData } from '@/src/types/checkin'
 
-import Greeting           from './Greeting'
-import MoodHistoryGraph   from './MoodHistoryGraph'
-import QuickStatsRow      from './QuickStatsRow'
-import StreakCounter       from './StreakCounter'
-import DashboardInsights from './DashboardInsights'
-import DashboardSkeleton  from './DashboardSkeleton'
-import DashboardError     from './DashboardError'
+import Greeting                from './Greeting'
+import MoodHistoryGraph        from './MoodHistoryGraph'
+import QuickStatsRow           from './QuickStatsRow'
+import StreakCounter            from './StreakCounter'
+import DashboardInsights       from './DashboardInsights'
+import PatternPredictionCard   from './PatternPredictionCard'
+import DashboardSkeleton       from './DashboardSkeleton'
+import DashboardError          from './DashboardError'
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth()
@@ -59,6 +60,9 @@ export default function DashboardPage() {
 
       {/* Streak */}
       <StreakCounter streak={streak} />
+
+      {/* Personal ML patterns — independent fetch, silently absent if ML is down */}
+      <PatternPredictionCard />
 
       {/* Insights — populated when available, empty state otherwise */}
       <DashboardInsights initialInsights={insights ?? []} />

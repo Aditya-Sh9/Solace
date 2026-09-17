@@ -11,6 +11,9 @@ state.md
 .env.*
 !.env.example
 
+# MCP server config (contains local API keys)
+.mcp.json
+
 # Dependencies
 node_modules/
 
@@ -24,6 +27,11 @@ out/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
 
 design-reference/
 

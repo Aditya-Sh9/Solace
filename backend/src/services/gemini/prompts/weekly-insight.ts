@@ -19,7 +19,7 @@ Output format: valid JSON only. Schema: { "insights": [ { "type": "...", "title"
 Types allowed: ENCOURAGEMENT, RECOMMENDATION, DEFICIENCY_FLAG, PATTERN
 Generate 1–4 insights maximum. Each insight must be distinct. Do not repeat the same flag twice.`
 
-export function buildUserPrompt(result: RuleEngineResult): string {
+export function buildUserPrompt(result: RuleEngineResult, mlPatterns?: string[]): string {
   const { flags, profile, summary } = result
 
   const profileLines = [
@@ -31,6 +31,10 @@ export function buildUserPrompt(result: RuleEngineResult): string {
     `- ${f.id} (confidence ${(f.confidence * 100).toFixed(0)}%)\n  Evidence: ${f.evidence.join('; ')}`
   ).join('\n')
 
+  const mlSection = mlPatterns && mlPatterns.length > 0
+    ? `\nPersonal patterns from this user's own historical data:\n${mlPatterns.map(p => `- ${p}`).join('\n')}\nWhere these personal patterns are relevant, weave them into your insights. They take priority over generic observations.`
+    : ''
+
   return `Here is what we know about this person's past week:
 
 Summary: ${summary}
@@ -40,6 +44,6 @@ ${profileLines || 'No profile data available.'}
 
 Patterns detected by our rule engine:
 ${flagLines || 'No strong patterns detected.'}
-
+${mlSection}
 Write ${flags.length > 0 ? flags.length : 1} warm, specific, gently curious insight${flags.length !== 1 ? 's' : ''} about what might be going on. Address each pattern directly but without being clinical. Use hedging language throughout. Do not invent patterns not listed above.`
 }

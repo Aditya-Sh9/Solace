@@ -4,6 +4,9 @@ import { FALLBACK_COPY } from './rule-engine/fallback-copy'
 import { synthesizeInsights } from './gemini/synthesize'
 import { validateTone } from './gemini/validate'
 import { GeminiUnavailable, GeminiTimeout, GeminiSchemaError } from './gemini/errors'
+import { predictPatterns } from './ml-client/client'
+import { patternToCopy } from './ml-client/translate'
+import type { CheckInPayload } from './ml-client/schema'
 import type { CheckInSnapshot, ProfileSnapshot, Flag } from './rule-engine/types'
 import type { InsightType } from '@prisma/client'
 import type { GeminiInsight } from './gemini/schema'
@@ -42,15 +45,19 @@ export async function runInsightPipeline(userId: string): Promise<PipelineResult
     }
   }
 
-  // 3. Fetch last 7 days of check-ins + profile
+  // 3. Fetch last 7 days of check-ins + full history (for ML) + profile
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7)
 
-  const [recentCheckIns, profile] = await Promise.all([
+  const [recentCheckIns, allCheckIns, profile] = await Promise.all([
     prisma.checkIn.findMany({
       where:   { userId, deletedAt: null, date: { gte: sevenDaysAgo } },
       orderBy: { date: 'desc' },
       take:    7,
+    }),
+    prisma.checkIn.findMany({
+      where:   { userId, deletedAt: null },
+      orderBy: { date: 'asc' },
     }),
     prisma.userProfile.findUnique({ where: { userId } }),
   ])
@@ -75,12 +82,37 @@ export async function runInsightPipeline(userId: string): Promise<PipelineResult
   const ruleResult = runRuleEngine(profileSnap, snapshots)
   if (ruleResult.flags.length === 0) return { status: 'no_flags' }
 
+  // 4b. Try ML patterns (additive context for Gemini — never blocks if ML is down)
+  let mlPatterns: string[] | undefined
+  try {
+    const mlPayload: CheckInPayload[] = allCheckIns.map(r => ({
+      date:             r.date.toISOString().slice(0, 10),
+      sleep_hours:      r.sleepHours,
+      water_glasses:    r.waterGlasses,
+      sunlight_minutes: r.sunlightMinutes,
+      stress_level:     r.stressLevel,
+      symptom_count:    r.symptoms.length,
+      food_group_count:  r.foodGroups.length,
+      mood_score:       r.moodScore,
+      energy_level:     r.energyScore,
+    }))
+    const mlResult = await predictPatterns(mlPayload)
+    if (mlResult.trained && mlResult.patterns.length > 0) {
+      mlPatterns = mlResult.patterns
+        .map(p => patternToCopy(p))
+        .filter((s): s is string => s !== null)
+        .slice(0, 3) // top 3 patterns only — keep prompt focused
+    }
+  } catch {
+    // ML unavailable — proceed without pattern context
+  }
+
   // 5. Try Gemini, fall back gracefully
   let insightDrafts: GeminiInsight[]
   let generated: 'gemini' | 'fallback' = 'fallback'
 
   try {
-    const geminiResult = await synthesizeInsights(ruleResult)
+    const geminiResult = await synthesizeInsights(ruleResult, mlPatterns)
     // 6. Validate tone per insight — swap bad ones with fallback copy
     insightDrafts = geminiResult.insights.map((insight, i) => {
       const toneCheck = validateTone(insight.body)

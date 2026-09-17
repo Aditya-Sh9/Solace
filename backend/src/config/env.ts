@@ -12,6 +12,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   GEMINI_API_KEY:      z.string().optional(),
   ML_SERVICE_URL:      z.string().default('http://localhost:8000'),
+  ML_API_KEY:          z.string().optional(),
 })
 
 export const env = envSchema.parse(process.env)

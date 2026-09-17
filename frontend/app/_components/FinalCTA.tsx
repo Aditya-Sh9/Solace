@@ -33,7 +33,7 @@ export default function FinalCTA() {
         </p>
 
         <div style={{ marginTop: 44 }}>
-          <Link href="/app" className="ink-btn ink-btn--primary">
+          <Link href="/signup" className="ink-btn ink-btn--primary">
             Begin a quiet practice
             <Icon.ChevronRight size={14} />
           </Link>

@@ -587,3 +587,26 @@ p { margin: 0; }
   }
 }
 *::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Auth page ───────────────────────────────────────────────────────────── */
+
+/* Brand panel drift + pulse animations */
+@keyframes auth-drift {
+  0%,100% { transform: translate(0,0) rotate(0deg); }
+  50%     { transform: translate(-6px, -4px) rotate(-2deg); }
+}
+@keyframes auth-pulse {
+  0%,100% { opacity: .35; transform: scale(1); }
+  50%     { opacity: .7;  transform: scale(1.15); }
+}
+
+/* Mobile inline switch — hidden on desktop, visible on narrow */
+.auth-mobile-switch { display: none; }
+@media (max-width: 639px) {
+  .auth-mobile-switch { display: block; }
+}
+
+/* OAuth row collapses to 1 column on very narrow screens */
+@media (max-width: 480px) {
+  .oauth-row { grid-template-columns: 1fr !important; }
+}

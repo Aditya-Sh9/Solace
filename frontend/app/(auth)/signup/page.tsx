@@ -1,5 +1,5 @@
-import SignupForm from '@/src/components/auth/SignupForm'
+import AuthCard from '@/src/components/auth/AuthCard'
 
 export default function SignupPage() {
-  return <SignupForm />
+  return <AuthCard initialMode="signup" />
 }

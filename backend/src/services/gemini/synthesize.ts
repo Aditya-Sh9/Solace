@@ -6,7 +6,7 @@ import type { RuleEngineResult } from '../rule-engine/types'
 
 const TIMEOUT_MS = 10_000
 
-export async function synthesizeInsights(result: RuleEngineResult): Promise<GeminiResponse> {
+export async function synthesizeInsights(result: RuleEngineResult, mlPatterns?: string[]): Promise<GeminiResponse> {
   const client = getGeminiClient()
   if (!client) throw new GeminiUnavailable()
 
@@ -20,7 +20,7 @@ export async function synthesizeInsights(result: RuleEngineResult): Promise<Gemi
     },
   })
 
-  const userPrompt = buildUserPrompt(result)
+  const userPrompt = buildUserPrompt(result, mlPatterns)
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)

@@ -59,4 +59,34 @@ describe('validateTone', () => {
     const { hits } = validateTone("You should take a supplement to cure this deficiency.")
     expect(hits.length).toBeGreaterThan(1)
   })
+
+  // Phase 4 — causation verbs
+  it('rejects "improves"', () => {
+    const { ok, hits } = validateTone("Sleep improves your mood significantly.")
+    expect(ok).toBe(false)
+    expect(hits).toContain('improves')
+  })
+
+  it('rejects "causes"', () => {
+    const { ok, hits } = validateTone("Dehydration causes brain fog.")
+    expect(ok).toBe(false)
+    expect(hits).toContain('causes')
+  })
+
+  it('rejects "leads to"', () => {
+    const { ok, hits } = validateTone("Poor sleep leads to lower energy.")
+    expect(ok).toBe(false)
+    expect(hits).toContain('leads to')
+  })
+
+  it('rejects "because of"', () => {
+    const { ok, hits } = validateTone("You feel tired because of low iron.")
+    expect(ok).toBe(false)
+    expect(hits).toContain('because of')
+  })
+
+  it('passes pattern copy with hedging language and no causation', () => {
+    const copy = "On days with more sleep, your mood tends to feel a little steadier."
+    expect(validateTone(copy).ok).toBe(true)
+  })
 })

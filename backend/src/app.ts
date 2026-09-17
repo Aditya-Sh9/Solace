@@ -7,6 +7,7 @@ import profileRouter    from './routes/profile'
 import checkInRouter    from './routes/checkin'
 import dashboardRouter  from './routes/dashboard'
 import insightsRouter   from './routes/insights'
+import patternsRouter   from './routes/patterns'
 
 const app = express()
 
@@ -58,6 +59,7 @@ app.use('/api/profile',    profileRouter)
 app.use('/api/checkin',    checkinLimiter, checkInRouter)
 app.use('/api/dashboard',  dashboardRouter)
 app.use('/api/insights',   insightLimiter, insightsRouter)
+app.use('/api/patterns',  patternsRouter)
 
 // Central error handler — catches all unhandled async errors thrown by routes
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

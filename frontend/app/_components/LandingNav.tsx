@@ -33,7 +33,7 @@ export default function LandingNav() {
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <ThemePicker theme={theme} mode={mode} setTheme={setTheme} setMode={setMode} />
-        <Link href="/app" className="ink-btn ink-btn--primary ink-btn--sm">
+        <Link href="/signup" className="ink-btn ink-btn--primary ink-btn--sm">
           Begin
           <Icon.ChevronRight size={13} />
         </Link>
