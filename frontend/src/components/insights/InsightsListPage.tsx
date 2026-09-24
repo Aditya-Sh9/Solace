@@ -9,18 +9,23 @@ import type { InsightType } from '@/src/components/ui/InsightCard'
 import InsightsHeader from './InsightsHeader'
 import InsightsEmpty  from './InsightsEmpty'
 import RefreshButton  from './RefreshButton'
+import InkCard   from '@/src/components/ui/InkCard'
+import InkButton from '@/src/components/ui/InkButton'
 
 export default function InsightsListPage() {
   const hasFetched = useRef(false)
   const [insights, setInsights]   = useState<Insight[]>([])
   const [loading,  setLoading]    = useState(true)
+  const [error,    setError]      = useState(false)
   const [hasData,  setHasData]    = useState(true) // assume enough data until API says otherwise
 
   const fetchInsights = useCallback(async () => {
     setLoading(true)
-    const { data } = await getInsights({ limit: 20 })
+    setError(false)
+    const { data, error: fetchError } = await getInsights({ limit: 20 })
     setLoading(false)
-    if (data) setInsights(data)
+    if (fetchError || !data) { setError(true); return }
+    setInsights(data)
   }, [])
 
   useEffect(() => {
@@ -46,6 +51,23 @@ export default function InsightsListPage() {
             }} />
           ))}
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
+        <InsightsHeader />
+        <InkCard variant="soft" style={{ padding: '28px 32px', maxWidth: 480 }}>
+          <p style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 500, color: 'var(--ink)' }}>
+            Something got in the way.
+          </p>
+          <p style={{ margin: '0 0 20px', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.55 }}>
+            Not your fault — try again in a moment?
+          </p>
+          <InkButton variant="ghost" onClick={() => { hasFetched.current = false; fetchInsights() }}>Try again</InkButton>
+        </InkCard>
       </div>
     )
   }

@@ -10,6 +10,7 @@ export interface TopNavProps {
   setScreen: (id: string) => void;
   profileName?: string;
   themePicker?: ReactNode;
+  onLogout?: () => void;
 }
 
 const NAV_ITEMS = [
@@ -20,7 +21,7 @@ const NAV_ITEMS = [
   { id: 'wellness',  label: 'Wellness', icon: <Icon.Flower  size={18} />, tilt:  1.0 },
 ];
 
-export default function TopNav({ screen, setScreen, profileName, themePicker }: TopNavProps) {
+export default function TopNav({ screen, setScreen, profileName, themePicker, onLogout }: TopNavProps) {
   return (
     <header style={{
       display: 'grid',
@@ -110,6 +111,39 @@ export default function TopNav({ screen, setScreen, profileName, themePicker }: 
 
         {/* Theme / mode picker injected from AppShell */}
         {themePicker}
+
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            aria-label="Log out"
+            title="Log out"
+            style={{
+              display: 'grid',
+              placeItems: 'center',
+              width: 34,
+              height: 34,
+              background: 'transparent',
+              border: '1px solid var(--ink-border)',
+              borderRadius: '55% 60% 50% 65% / 60% 55% 65% 50%',
+              color: 'var(--ink-muted)',
+              cursor: 'pointer',
+              transition: 'transform 220ms cubic-bezier(.34,1.4,.64,1), color 220ms ease, border-color 220ms ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'var(--accent)';
+              e.currentTarget.style.borderColor = 'var(--accent-soft)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'var(--ink-muted)';
+              e.currentTarget.style.borderColor = 'var(--ink-border)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <Icon.Logout size={16} />
+          </button>
+        )}
       </div>
     </header>
   );

@@ -11,11 +11,17 @@ import { useTheme } from '@/src/hooks/use-theme'
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const { theme, mode, setTheme, setMode } = useTheme()
 
   const screen      = pathname.split('/')[1] || 'dashboard'
   const profileName = user?.user_metadata?.name || user?.email?.split('@')[0] || ''
+
+  const handleLogout = async () => {
+    await signOut()
+    router.refresh() // let proxy.ts see the cleared session before navigating
+    router.push('/login')
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
@@ -25,6 +31,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           setScreen={id => router.push(`/${id}`)}
           profileName={profileName}
           themePicker={<ThemePicker theme={theme} mode={mode} setTheme={setTheme} setMode={setMode} />}
+          onLogout={handleLogout}
         />
       </div>
 

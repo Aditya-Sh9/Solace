@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/src/lib/supabase/client'
+import { getJournalSalt } from '@/src/lib/api/journal'
+import { deriveKey, cacheKey, clearCachedKey } from '@/src/lib/journal-crypto'
 
 export interface UseAuthReturn {
   user:    User | null
@@ -34,6 +36,19 @@ export function useAuth(): UseAuthReturn {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await createClient().auth.signInWithPassword({ email, password })
+    if (!error) {
+      // Password is only ever in scope here, inside this closure — derive and cache
+      // the journal key now, before it falls out of scope. Best-effort: a failure here
+      // (e.g. backend unreachable) just means the journal's "unlock" prompt handles it
+      // later — it must never block login.
+      try {
+        const { data: saltData } = await getJournalSalt()
+        if (saltData) {
+          const key = await deriveKey(password, saltData.salt)
+          await cacheKey(key)
+        }
+      } catch { /* journal key derivation is best-effort — never blocks sign-in */ }
+    }
     return { error: error?.message ?? null }
   }, [])
 
@@ -42,6 +57,18 @@ export function useAuth(): UseAuthReturn {
       email, password,
       options: { data: { name } },
     })
+    if (!error && data.session) {
+      // Only possible when email confirmation is off / already satisfied — otherwise
+      // there's no session yet to call the backend with, and the key derives on the
+      // eventual first real sign-in instead.
+      try {
+        const { data: saltData } = await getJournalSalt()
+        if (saltData) {
+          const key = await deriveKey(password, saltData.salt)
+          await cacheKey(key)
+        }
+      } catch { /* journal key derivation is best-effort — never blocks sign-up */ }
+    }
     return {
       error: error?.message ?? null,
       needsConfirmation: !error && !data.session,
@@ -50,6 +77,7 @@ export function useAuth(): UseAuthReturn {
 
   const signOut = useCallback(async () => {
     await createClient().auth.signOut()
+    clearCachedKey()
   }, [])
 
   return { user, session, loading, signIn, signUp, signOut }

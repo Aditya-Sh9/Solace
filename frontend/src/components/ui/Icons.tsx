@@ -132,6 +132,12 @@ export const Icon = {
       <path d="M12 3.6S5.4 11 5.4 15.2A6.6 6.6 0 0 0 12 21.8 6.6 6.6 0 0 0 18.6 15.2C18.6 11 12 3.6 12 3.6Z" />
     </svg>
   ),
+  Logout: ({ size = 18, color = 'currentColor' }: IconProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...b(color)}>
+      <path d="M13.6 4.6H6.8c-.6 0-1.1.5-1.1 1.1v12.6c0 .6.5 1.1 1.1 1.1h6.8" />
+      <path d="M9.6 12h9.8M16 8.2l3.4 3.8-3.4 3.8" />
+    </svg>
+  ),
 };
 
 // ── Mood faces (0 = heavy … 5 = glowing) ──────────────────────────────────

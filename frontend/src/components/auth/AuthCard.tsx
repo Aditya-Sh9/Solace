@@ -470,7 +470,7 @@ function LoginForm({ setMode }: { setMode: (m: AuthMode) => void }) {
           margin: '2px 0 14px', cursor: 'pointer',
           fontSize: 13.5, color: 'var(--ink-soft)',
         }}>
-          <SketchyCheck on={remember} onClick={() => setRemember(r => !r)} />
+          <SketchyCheck on={remember} onClick={() => setRemember(r => !r)} label="Keep me signed in on this device" />
           keep me signed in on this device
         </label>
 
@@ -579,7 +579,7 @@ function SignupForm({ setMode }: { setMode: (m: AuthMode) => void }) {
           margin: '2px 0 12px', cursor: 'pointer',
           fontSize: 13.5, color: 'var(--ink-soft)',
         }}>
-          <SketchyCheck on={agree} onClick={() => setAgree(a => !a)} />
+          <SketchyCheck on={agree} onClick={() => setAgree(a => !a)} label="I've read the quiet promise" />
           I&apos;ve read the{' '}
           <a href="#" style={{
             color: 'var(--accent)',
@@ -662,12 +662,14 @@ function AuthField({
 
 // ── Sketchy checkbox ─────────────────────────────────────────────────────────
 
-function SketchyCheck({ on, onClick }: { on: boolean; onClick: () => void }) {
+function SketchyCheck({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
   return (
     <button
       type="button"
+      role="checkbox"
+      aria-checked={on}
+      aria-label={label}
       onClick={onClick}
-      aria-pressed={on}
       style={{
         width: 22, height: 22, padding: 0, flexShrink: 0,
         background: on ? 'var(--accent-wash)' : 'var(--paper)',

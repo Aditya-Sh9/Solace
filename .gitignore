@@ -4,6 +4,7 @@
 # Claude context files
 CLAUDE.md
 state.md
+CLAUDE.md.backup
 
 # Env files
 .env
@@ -38,3 +39,6 @@ design-reference/
 .Codex
 
 AGENTS.md
+
+# Graphify generated knowledge graph
+graphify-out/

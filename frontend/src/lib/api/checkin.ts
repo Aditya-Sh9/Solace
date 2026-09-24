@@ -15,3 +15,7 @@ export function getTodayCheckIn() {
 export function getDashboard() {
   return apiFetch<DashboardData>('/api/dashboard')
 }
+
+export function getCheckinHistory(days: number) {
+  return apiFetch<CheckInRecord[]>(`/api/checkin/history?days=${days}`)
+}

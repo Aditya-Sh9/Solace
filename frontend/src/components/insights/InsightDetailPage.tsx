@@ -5,10 +5,12 @@ import Link from 'next/link'
 import { getInsight } from '@/src/lib/api/insights'
 import type { Insight } from '@/src/types/insight'
 import InkCard from '@/src/components/ui/InkCard'
+import InkButton from '@/src/components/ui/InkButton'
 import InsightCard from '@/src/components/ui/InsightCard'
 import type { InsightType } from '@/src/components/ui/InsightCard'
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const NOT_FOUND_MESSAGE = 'That insight could not be found.'
 
 interface InsightDetailPageProps {
   id: string
@@ -19,12 +21,18 @@ export default function InsightDetailPage({ id }: InsightDetailPageProps) {
   const [insight, setInsight] = useState<Insight | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [error, setError] = useState(false)
 
   const fetchInsight = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await getInsight(id)
+    setNotFound(false)
+    setError(false)
+    const { data, error: fetchError } = await getInsight(id)
     setLoading(false)
-    if (error || !data) { setNotFound(true); return }
+    // The backend returns this exact message for a genuine 404 — anything else
+    // (network failure, 500, timeout) is a retryable problem, not "not found".
+    if (fetchError === NOT_FOUND_MESSAGE) { setNotFound(true); return }
+    if (fetchError || !data) { setError(true); return }
     setInsight(data)
   }, [id])
 
@@ -41,6 +49,25 @@ export default function InsightDetailPage({ id }: InsightDetailPageProps) {
           height: 200, borderRadius: '18px 16px 20px 17px / 17px 18px 16px 19px',
           background: 'var(--surface)', animation: 'ink-pulse 1.6s ease infinite',
         }} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 24px' }}>
+        <Link href="/insights" style={{ fontSize: 13, color: 'var(--ink-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 28 }}>
+          ← Back to insights
+        </Link>
+        <InkCard variant="soft" style={{ padding: '32px 36px' }}>
+          <p style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 500, color: 'var(--ink)' }}>
+            Something got in the way.
+          </p>
+          <p style={{ margin: '0 0 20px', fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.55 }}>
+            Not your fault — try again in a moment?
+          </p>
+          <InkButton variant="ghost" onClick={() => { hasFetched.current = false; fetchInsight() }}>Try again</InkButton>
+        </InkCard>
       </div>
     )
   }

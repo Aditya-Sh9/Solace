@@ -36,6 +36,7 @@ export default function CheckInPage() {
   const { loading: authLoading } = useAuth()
   const hasFetched = useRef(false)
   const [form,    setForm]    = useState<CheckInFormData>(DEFAULT_FORM)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -46,7 +47,9 @@ export default function CheckInPage() {
     if (hasFetched.current) return
     hasFetched.current = true
 
-    getTodayCheckIn().then(({ data }) => {
+    getTodayCheckIn().then(({ data, error: fetchError }) => {
+      setInitialLoading(false)
+      if (fetchError) { setError(fetchError); return }
       if (!data) return
       setIsEdit(true)
       setForm({
@@ -76,6 +79,14 @@ export default function CheckInPage() {
   }
 
   if (success) return <SaveSuccess />
+
+  if (initialLoading) {
+    return (
+      <div className="checkin-page" style={{ maxWidth: 760, display: 'flex', justifyContent: 'center', paddingTop: 80 }}>
+        <p style={{ color: 'var(--ink-muted)', fontSize: 15 }}>Finding today&rsquo;s entry&hellip;</p>
+      </div>
+    )
+  }
 
   const _now = new Date()
   const _months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']

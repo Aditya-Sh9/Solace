@@ -14,6 +14,8 @@ export default function FeatureMoodPicker() {
             key={i}
             type="button"
             onClick={() => setSelected(i)}
+            aria-label={MOOD_LABELS[i]}
+            aria-pressed={selected === i}
             style={{
               position: 'relative', background: 'transparent', border: 'none',
               cursor: 'pointer', padding: 6,

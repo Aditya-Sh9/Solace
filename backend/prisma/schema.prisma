@@ -15,11 +15,12 @@ datasource db {
 // ─────────────────────────────────────────────
 
 model User {
-  id        String   @id // mirrors Supabase auth.users.id (UUID)
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String   @id // mirrors Supabase auth.users.id (UUID)
+  email      String   @unique
+  name       String?
+  journalSalt String? @map("journal_salt") // base64 PBKDF2 salt — not secret, client derives the key
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   profile      UserProfile?
   checkIns     CheckIn[]
