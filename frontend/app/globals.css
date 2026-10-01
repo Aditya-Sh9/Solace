@@ -634,11 +634,6 @@ html.lenis body { height: auto; }
   .auth-mobile-switch { display: block; }
 }
 
-/* OAuth row collapses to 1 column on very narrow screens */
-@media (max-width: 480px) {
-  .oauth-row { grid-template-columns: 1fr !important; }
-}
-
 /* ── Hero margin note (replaces the old eyebrow pill) ───────────────────── */
 
 .hero-margin-note {

@@ -12,7 +12,14 @@ export interface UseAuthReturn {
   loading: boolean
   signIn:  (email: string, password: string) => Promise<{ error: string | null }>
   signUp:  (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirmation: boolean }>
+  signInWithGoogle: () => Promise<{ error: string | null }>
   signOut: () => Promise<void>
+}
+
+// SSO-only accounts never type a password, so the journal can't derive its key from one —
+// those users set a separate journal passphrase instead (security-rules.md). This is the switch.
+export function hasPasswordIdentity(user: User): boolean {
+  return user.identities?.some(i => i.provider === 'email') ?? false
 }
 
 export function useAuth(): UseAuthReturn {
@@ -75,10 +82,20 @@ export function useAuth(): UseAuthReturn {
     }
   }, [])
 
+  const signInWithGoogle = useCallback(async () => {
+    // On success the browser leaves for Google, so this only ever resolves with an error.
+    // No journal key here — there is no password in scope (see hasPasswordIdentity).
+    const { error } = await createClient().auth.signInWithOAuth({
+      provider: 'google',
+      options:  { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    return { error: error?.message ?? null }
+  }, [])
+
   const signOut = useCallback(async () => {
     await createClient().auth.signOut()
     clearCachedKey()
   }, [])
 
-  return { user, session, loading, signIn, signUp, signOut }
+  return { user, session, loading, signIn, signUp, signInWithGoogle, signOut }
 }

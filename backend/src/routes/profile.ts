@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { requireAuth } from '../middleware/auth'
 import { prisma } from '../services/prisma'
+import { hasCycleAccess } from '../services/cycle-access'
 
 const router = Router()
 
@@ -12,6 +13,17 @@ const patchSchema = z.object({
   dietaryPattern: z.enum(['OMNIVORE', 'VEGETARIAN', 'VEGAN', 'PESCATARIAN', 'OTHER']).optional(),
   wellnessGoal:   z.string().max(200).optional(),
   cycleTracking:  z.boolean().optional(),
+  gender:         z.enum(['FEMALE', 'MALE', 'UNDISCLOSED']).optional(),
+})
+
+// Always 200 so the client can tell "hasn't onboarded yet" apart from a failed request —
+// GET / returns 404 when the public.users row is missing, which looks like an error to apiFetch.
+router.get('/status', requireAuth, async (req, res) => {
+  const profile = await prisma.userProfile.findUnique({
+    where:  { userId: req.user!.userId },
+    select: { gender: true },
+  })
+  res.json({ data: { onboarded: profile !== null, cycleAccess: hasCycleAccess(profile?.gender) } })
 })
 
 router.get('/', requireAuth, async (req, res) => {
@@ -34,6 +46,7 @@ router.patch('/', requireAuth, async (req, res) => {
   }
 
   const { name, ...profileFields } = parsed.data
+  if (profileFields.gender && !hasCycleAccess(profileFields.gender)) profileFields.cycleTracking = false
   const userId = req.user!.userId
 
   const [user, profile] = await Promise.all([

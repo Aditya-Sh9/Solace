@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireAuth } from '../middleware/auth'
 import { prisma } from '../services/prisma'
 import { generateFirstInsight } from '../services/insight-service'
+import { hasCycleAccess } from '../services/cycle-access'
 
 const router = Router()
 
@@ -16,6 +17,7 @@ const onboardingSchema = z.object({
   stressLevel:    z.number().int().min(1).max(5).optional(),
   wellnessGoal:   z.string().max(200).optional(),
   cycleTracking:  z.boolean().optional(),
+  gender:         z.enum(['FEMALE', 'MALE', 'UNDISCLOSED']).optional(),
 })
 
 router.post('/', requireAuth, async (req, res) => {
@@ -26,7 +28,9 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   const { name, age, activityLevel, dietaryPattern, symptoms,
-          sleepHours, stressLevel, wellnessGoal, cycleTracking } = parsed.data
+          sleepHours, stressLevel, wellnessGoal, gender } = parsed.data
+  // No cycle tracking without access to the section that would use it.
+  const cycleTracking = hasCycleAccess(gender) ? parsed.data.cycleTracking : false
   const { userId, email } = req.user!
 
   const { profile, insights } = await prisma.$transaction(async (tx) => {
@@ -38,8 +42,8 @@ router.post('/', requireAuth, async (req, res) => {
 
     const savedProfile = await tx.userProfile.upsert({
       where:  { userId },
-      update: { age, activityLevel, dietaryPattern, wellnessGoal, cycleTracking },
-      create: { userId, age, activityLevel, dietaryPattern, wellnessGoal, cycleTracking: cycleTracking ?? false },
+      update: { age, activityLevel, dietaryPattern, wellnessGoal, gender, cycleTracking },
+      create: { userId, age, activityLevel, dietaryPattern, wellnessGoal, gender, cycleTracking: cycleTracking ?? false },
     })
 
     // Skip insight generation if insights already exist for this user (idempotency)

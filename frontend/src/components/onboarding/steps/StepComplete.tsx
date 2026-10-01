@@ -35,6 +35,7 @@ export default function StepComplete({ data }: StepProps) {
       stressLevel:    data.stressLevel,
       wellnessGoal:   data.wellnessGoal,
       cycleTracking:  data.cycleTracking,
+      gender:         data.gender,
     }
 
     apiFetch<OnboardingResponse>('/api/onboarding', {

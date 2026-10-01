@@ -11,6 +11,7 @@ export interface TopNavProps {
   profileName?: string;
   themePicker?: ReactNode;
   onLogout?: () => void;
+  showWellness?: boolean;
 }
 
 const NAV_ITEMS = [
@@ -21,7 +22,8 @@ const NAV_ITEMS = [
   { id: 'wellness',  label: 'Wellness', icon: <Icon.Flower  size={18} />, tilt:  1.0 },
 ];
 
-export default function TopNav({ screen, setScreen, profileName, themePicker, onLogout }: TopNavProps) {
+export default function TopNav({ screen, setScreen, profileName, themePicker, onLogout, showWellness = true }: TopNavProps) {
+  const items = showWellness ? NAV_ITEMS : NAV_ITEMS.filter(it => it.id !== 'wellness');
   return (
     <header style={{
       display: 'grid',
@@ -65,7 +67,7 @@ export default function TopNav({ screen, setScreen, profileName, themePicker, on
         alignItems: 'center',
         gap: 20,
       }}>
-        {NAV_ITEMS.map((it) => (
+        {items.map((it) => (
           <NavPill
             key={it.id}
             item={it}

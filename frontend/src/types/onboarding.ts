@@ -1,4 +1,5 @@
 export type ActivityLevel  = 'SEDENTARY' | 'LIGHTLY_ACTIVE' | 'MODERATELY_ACTIVE' | 'VERY_ACTIVE'
+export type Gender         = 'FEMALE' | 'MALE' | 'UNDISCLOSED'
 export type DietaryPattern = 'OMNIVORE' | 'VEGETARIAN' | 'VEGAN' | 'PESCATARIAN' | 'OTHER'
 
 export interface OnboardingFormData {
@@ -12,6 +13,7 @@ export interface OnboardingFormData {
   stressLevel?:    number
   wellnessGoal?:   string
   cycleTracking?:  boolean
+  gender?:         Gender
 }
 
 export interface InsightCard {
@@ -20,4 +22,9 @@ export interface InsightCard {
   title:     string
   body:      string
   flags:     string[]
+}
+
+export interface OnboardingStatus {
+  onboarded:   boolean
+  cycleAccess: boolean   // false hides the Wellness (cycle) section — rule lives in the backend
 }

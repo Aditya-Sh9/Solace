@@ -15,7 +15,8 @@ const NAV_ITEMS: (NavItem & { href: string })[] = [
 
 const TILTS = [-0.5, 0.4, -0.3, 0.5, -0.4]
 
-export default function BottomNav() {
+export default function BottomNav({ showWellness = true }: { showWellness?: boolean }) {
+  const items = showWellness ? NAV_ITEMS : NAV_ITEMS.filter(it => it.id !== 'wellness')
   const pathname = usePathname()
   const router   = useRouter()
 
@@ -35,7 +36,7 @@ export default function BottomNav() {
         zIndex: 50,
       }}
     >
-      {NAV_ITEMS.map((item, i) => (
+      {items.map((item, i) => (
         <NavPill
           key={item.id}
           item={item}

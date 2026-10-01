@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   HandDrawnFrame,
@@ -424,15 +424,24 @@ function LoginForm({ setMode }: { setMode: (m: AuthMode) => void }) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // /auth/callback bounces failed Google sign-ins here with ?error=oauth. Derived at render
+  // time; hidden again as soon as they try something else.
+  const oauthFailed = useSearchParams().get('error') === 'oauth'
+  const [attempted, setAttempted] = useState(false)
+  const shownError = error ?? (oauthFailed && !attempted ? OAUTH_ERROR : null)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    setAttempted(true)
     const result = await signIn(email, pw)
     setLoading(false)
     if (result.error) { setError(result.error); return }
     router.refresh()
-    router.push('/dashboard')
+    // The onboarding gate forwards anyone already onboarded to /dashboard, and catches
+    // people who left onboarding half-way.
+    router.push('/onboarding')
   }
 
   return (
@@ -474,8 +483,8 @@ function LoginForm({ setMode }: { setMode: (m: AuthMode) => void }) {
           keep me signed in on this device
         </label>
 
-        {error && (
-          <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--ink-soft)' }}>{error}</p>
+        {shownError && (
+          <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--ink-soft)' }}>{shownError}</p>
         )}
 
         <InkButton
@@ -489,7 +498,7 @@ function LoginForm({ setMode }: { setMode: (m: AuthMode) => void }) {
         </InkButton>
       </form>
 
-      <OAuthRow />
+      <OAuthRow onError={setError} />
       <MobileSwitch mode="login" setMode={setMode} />
     </FormShell>
   )
@@ -603,7 +612,7 @@ function SignupForm({ setMode }: { setMode: (m: AuthMode) => void }) {
         </InkButton>
       </form>
 
-      <OAuthRow />
+      <OAuthRow onError={setError} />
       <MobileSwitch mode="signup" setMode={setMode} />
     </FormShell>
   )
@@ -693,7 +702,32 @@ function SketchyCheck({ on, onClick, label }: { on: boolean; onClick: () => void
 
 // ── OAuth row ────────────────────────────────────────────────────────────────
 
-function OAuthRow() {
+const OAUTH_ERROR = "Google didn't quite let us in — not your fault. Try again, or use your email instead?"
+
+// Google only for now — Apple needs a paid developer account. If a second provider comes
+// back, lay the buttons out in a 2-col grid that collapses to 1 col under 480px.
+function OAuthRow({ onError }: { onError: (msg: string) => void }) {
+  const { signInWithGoogle } = useAuth()
+  const [busy, setBusy] = useState(false)
+
+  // Back from Google's page can restore this card from the bfcache with `busy` still true.
+  useEffect(() => {
+    const reset = (e: PageTransitionEvent) => { if (e.persisted) setBusy(false) }
+    window.addEventListener('pageshow', reset)
+    return () => window.removeEventListener('pageshow', reset)
+  }, [])
+
+  async function handleGoogle() {
+    setBusy(true)
+    const { error } = await signInWithGoogle()
+    // Success navigates away to Google, so we only get here on failure.
+    if (error) {
+      console.error('[auth] Google sign-in failed:', error)
+      onError(OAUTH_ERROR)
+      setBusy(false)
+    }
+  }
+
   return (
     <div style={{ marginTop: 16 }}>
       <div style={{
@@ -704,10 +738,7 @@ function OAuthRow() {
         <span className="hand" style={{ fontSize: 15 }}>or</span>
         <DashedRule />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="oauth-row">
-        <OAuthButton label="Apple"  glyph={<AppleGlyph />} />
-        <OAuthButton label="Google" glyph={<GoogleGlyph />} />
-      </div>
+      <OAuthButton label="Google" glyph={<GoogleGlyph />} busy={busy} onClick={handleGoogle} />
     </div>
   )
 }
@@ -716,20 +747,29 @@ function DashedRule() {
   return <span style={{ flex: 1, height: 1, borderTop: '1px dashed var(--ink-border)' }} />
 }
 
-function OAuthButton({ label, glyph }: { label: string; glyph: React.ReactNode }) {
+function OAuthButton({ label, glyph, busy, onClick }: {
+  label: string
+  glyph: React.ReactNode
+  busy: boolean
+  onClick: () => void
+}) {
   const [hover, setHover] = useState(false)
   return (
     <button
       type="button"
+      onClick={onClick}
+      disabled={busy}
+      aria-busy={busy}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
         position: 'relative',
         padding: '10px 12px',
-        background: 'transparent', border: 'none', cursor: 'pointer',
+        background: 'transparent', border: 'none', cursor: busy ? 'default' : 'pointer',
+        opacity: busy ? 0.7 : 1,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         color: 'var(--ink)', font: '500 13px/1 var(--font-sans, DM Sans, sans-serif)',
-        transform: hover ? 'translateY(-1px)' : 'none',
+        transform: hover && !busy ? 'translateY(-1px)' : 'none',
         transition: 'transform 240ms cubic-bezier(.34,1.3,.64,1)',
         width: '100%',
       }}
@@ -738,16 +778,10 @@ function OAuthButton({ label, glyph }: { label: string; glyph: React.ReactNode }
         <HandDrawnFrame seed={label.length * 73} jitter={1.4} fill="var(--paper)" stroke="var(--ink-faint)" strokeWidth={1.2} radius={14} />
       </span>
       <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex' }}>{glyph}</span>
-      <span style={{ position: 'relative', zIndex: 2 }}>Continue with {label}</span>
+      <span style={{ position: 'relative', zIndex: 2 }}>
+        {busy ? `Opening ${label}…` : `Continue with ${label}`}
+      </span>
     </button>
-  )
-}
-
-function AppleGlyph() {
-  return (
-    <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
-      <path d="M11.4 8.5c0-2 1.6-2.9 1.7-3-.9-1.4-2.4-1.6-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7-1.4 0-2.6.8-3.3 2-1.4 2.4-.4 6 1 8 .7 1 1.5 2 2.6 2 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.8-1 2.5-2 .8-1.1 1.1-2.2 1.1-2.3-.1 0-2.5-1-2.5-3.9ZM9.3 2.4C9.9 1.7 10.3.7 10.2-.2c-.8 0-1.8.5-2.4 1.2-.5.6-1 1.5-.9 2.4.9.1 1.8-.4 2.4-1Z" />
-    </svg>
   )
 }
 
