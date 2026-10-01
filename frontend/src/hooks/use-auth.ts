@@ -50,7 +50,9 @@ export function useAuth(): UseAuthReturn {
       // later — it must never block login.
       try {
         const { data: saltData } = await getJournalSalt()
-        if (saltData) {
+        // A journal pinned to a passphrase must never get a password-derived key cached —
+        // pages written with it would then never open with the passphrase.
+        if (saltData && saltData.keyKind !== 'PASSPHRASE') {
           const key = await deriveKey(password, saltData.salt)
           await cacheKey(key)
         }

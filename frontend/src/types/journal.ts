@@ -12,8 +12,16 @@ export interface JournalEntryRecord {
   updatedAt:  string
 }
 
-export interface JournalEntryFormData {
-  date:       string
+// Sealed content of one page — all an edit ever sends.
+export interface JournalEntrySealed {
   ciphertext: string
   iv:         string
 }
+
+// A new page also carries the writer's local calendar day (YYYY-MM-DD).
+export interface JournalEntryCreate extends JournalEntrySealed {
+  date: string
+}
+
+// Which secret the journal key is derived from — stored once per account (not secret).
+export type JournalKeyKind = 'PASSWORD' | 'PASSPHRASE'

@@ -19,6 +19,9 @@ model User {
   email      String   @unique
   name       String?
   journalSalt String? @map("journal_salt") // base64 PBKDF2 salt — not secret, client derives the key
+  // Which secret the journal key is derived from. Set once, when the key is first established, so a
+  // later change in sign-in methods can't switch the journal to a secret its pages weren't locked with.
+  journalKeyKind JournalKeyKind? @map("journal_key_kind")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
@@ -87,7 +90,7 @@ model CheckIn {
 model JournalEntry {
   id         String    @id @default(cuid())
   userId     String    @map("user_id")
-  date       DateTime  @db.Date
+  date       DateTime  @db.Date  // the writer's local calendar day — many pages per day allowed
   ciphertext String    // AES-GCM encrypted blob (base64)
   iv         String    // Initialisation vector (base64)
   deletedAt  DateTime? @map("deleted_at") // soft delete
@@ -96,8 +99,8 @@ model JournalEntry {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, date])
   @@index([userId])
+  @@index([userId, createdAt])
   @@map("journal_entries")
 }
 
@@ -146,6 +149,11 @@ model CycleEntry {
 // ─────────────────────────────────────────────
 // Enums
 // ─────────────────────────────────────────────
+
+enum JournalKeyKind {
+  PASSWORD    // derived from the login password (email accounts)
+  PASSPHRASE  // separate journal passphrase (Google-only accounts)
+}
 
 enum Gender {
   FEMALE
