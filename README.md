@@ -18,11 +18,11 @@ and surfaces honest, non-clinical patterns in your own data, without ever diagno
 | Service | URL |
 |---|---|
 | App (frontend) | [solace-frontend-yk6x.vercel.app](https://solace-frontend-yk6x.vercel.app) |
-| API (backend) | Railway (private) |
-| ML service | Railway (private) |
+| API (backend) | [solace-backend-tfpm.onrender.com](https://solace-backend-tfpm.onrender.com) |
+| ML service | [solace-ml-api.onrender.com](https://solace-ml-api.onrender.com) (called only by the backend) |
 
-Backend and ML service run on Railway's free tier, which sleeps after inactivity — the first
-request after a while may take a few seconds to wake up.
+Backend and ML service run on Render's free tier, which sleeps after 15 minutes of inactivity — the
+first request after a while can take 30–50 seconds to wake up.
 
 ---
 
@@ -70,9 +70,9 @@ Phase 7 — free-tier serverless inference wasn't reliable enough to ship earlie
 Three independently deployed services:
 
 ```
-Next.js (Vercel)  →  Express + TypeScript API (Railway)  →  Supabase Postgres (via Prisma)
+Next.js (Vercel)  →  Express + TypeScript API (Render)  →  Supabase Postgres (via Prisma)
                               │                        └──→  Google Gemini Flash
-                              └──────────────────────────→  Python FastAPI ML service (Railway)
+                              └──────────────────────────→  Python FastAPI ML service (Render)
 ```
 
 - **Frontend never talks to the database, Gemini, or the ML service directly** — everything routes
@@ -95,7 +95,7 @@ Next.js (Vercel)  →  Express + TypeScript API (Railway)  →  Supabase Postgre
 | ML service | Python 3.12, FastAPI, scikit-learn, pandas, numpy, scipy |
 | Auth & DB | Supabase (Postgres + Auth) |
 | AI | Google Gemini Flash |
-| Deploy | Vercel (frontend), Railway (backend + ML), Supabase Cloud |
+| Deploy | Vercel (frontend), Render (backend + ML), Supabase Cloud |
 
 ---
 
