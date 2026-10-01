@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/src/hooks/use-auth'
+import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
 import { getDashboard } from '@/src/lib/api/checkin'
 import type { DashboardData } from '@/src/types/checkin'
 
@@ -42,24 +43,29 @@ export default function DashboardPage() {
 
   const name = user?.user_metadata?.name ?? user?.email?.split('@')[0] ?? 'there'
 
+  const gridRef = useRef<HTMLDivElement>(null)
+  useInkEntrance(gridRef, !loading && !error && data !== null)
+
   if (loading) return <DashboardSkeleton />
   if (error)   return <DashboardError onRetry={() => { hasFetched.current = false; fetchData() }} />
 
   const { history, streak, stats, insights } = data!
 
+  // data-enter wrappers stagger in via GSAP. PatternPredictionCard and
+  // DashboardInsights are left unwrapped — they already animate with Framer.
   return (
-    <div className="dashboard-grid">
+    <div className="dashboard-grid" ref={gridRef}>
       {/* Greeting — embeds today's check-in + journal CTA buttons */}
-      <Greeting name={name} />
+      <div data-enter><Greeting name={name} /></div>
 
       {/* Mood + energy history graph */}
-      <MoodHistoryGraph history={history} />
+      <div data-enter><MoodHistoryGraph history={history} /></div>
 
       {/* Quick stats */}
-      <QuickStatsRow stats={stats} />
+      <div data-enter><QuickStatsRow stats={stats} /></div>
 
       {/* Streak */}
-      <StreakCounter streak={streak} />
+      <div data-enter><StreakCounter streak={streak} /></div>
 
       {/* Personal ML patterns — independent fetch, silently absent if ML is down */}
       <PatternPredictionCard />

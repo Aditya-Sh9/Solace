@@ -10,7 +10,7 @@ export default function FinalCTA() {
         textAlign: 'center',
       }}
     >
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+      <div data-reveal style={{ maxWidth: 560, margin: '0 auto' }}>
 
         <h2
           className="serif"

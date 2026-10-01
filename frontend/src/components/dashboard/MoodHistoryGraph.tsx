@@ -177,7 +177,7 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
       {/* Graph in hand-drawn card */}
       <InkCard hand handIntensity={1.8} style={{ padding: '60px 24px 18px', overflow: 'visible', opacity: loadingRange ? 0.6 : 1, transition: 'opacity 320ms ease' }}>
         <div style={{ overflow: 'visible' }}>
-          <MoodGraph data={moodData} energy={energyData} height={260} wobble={0.18} />
+          <MoodGraph data={moodData} energy={energyData} height={260} wobble={0.18} drawOnMount />
         </div>
         {/* X-axis date labels */}
         <div style={{

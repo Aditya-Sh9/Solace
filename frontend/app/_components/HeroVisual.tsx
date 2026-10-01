@@ -32,7 +32,7 @@ export default function HeroVisual() {
         }}>
           <div className="eyebrow" style={{ marginBottom: 4 }}>Recent days</div>
           <div className="hand" style={{ fontSize: 18, color: 'var(--accent)', marginBottom: 6 }}>mostly gentle</div>
-          <MoodGraph data={[2.4, 3.8, 1.2, 3.0, 5.4, 3.6, 0.6]} width={420} height={120} wobble={0.2} />
+          <MoodGraph data={[2.4, 3.8, 1.2, 3.0, 5.4, 3.6, 0.6]} width={420} height={120} wobble={0.2} drawOnMount />
         </InkCard>
       </motion.div>
 

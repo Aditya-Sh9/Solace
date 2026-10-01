@@ -5,12 +5,13 @@ import {
   InkCard,
   Icon,
   HandDrawnUnderline,
-  MarginDoodle,
   IllustrationCup,
   IllustrationLeaves,
   IllustrationPlant,
 } from '@/src/components/ui';
+import ScrollReveal from '@/src/components/animations/ScrollReveal';
 import FeatureMoodPicker from './_components/FeatureMoodPicker';
+import { FeatureJournal, FeatureWellness } from './_components/FeatureVisuals';
 import HeroText from './_components/HeroText';
 import HeroVisual from './_components/HeroVisual';
 import FinalCTA from './_components/FinalCTA';
@@ -31,14 +32,17 @@ interface BeliefCardProps {
 }
 
 function BeliefCard({ illo, title, body, tilt = 0 }: BeliefCardProps) {
+  // data-reveal sits on a plain wrapper — the InkCard root owns tilt + hover transforms
   return (
-    <InkCard hand handIntensity={2.2} tilt={tilt} hoverable style={{ padding: 26, minHeight: 220 }}>
-      <div style={{ marginBottom: 14 }}>{illo}</div>
-      <h3 className="serif" style={{ fontSize: 22, fontWeight: 500, marginBottom: 8, lineHeight: 1.2 }}>
-        {title}
-      </h3>
-      <p style={{ color: 'var(--ink-soft)', fontSize: 15, lineHeight: 1.55 }}>{body}</p>
-    </InkCard>
+    <div data-reveal>
+      <InkCard hand handIntensity={2.2} tilt={tilt} hoverable style={{ padding: 26, minHeight: 220 }}>
+        <div style={{ marginBottom: 14 }}>{illo}</div>
+        <h3 className="serif" style={{ fontSize: 22, fontWeight: 500, marginBottom: 8, lineHeight: 1.2 }}>
+          {title}
+        </h3>
+        <p style={{ color: 'var(--ink-soft)', fontSize: 15, lineHeight: 1.55 }}>{body}</p>
+      </InkCard>
+    </div>
   );
 }
 
@@ -55,7 +59,7 @@ interface FeatureRowProps {
 
 function FeatureRow({ eyebrow, title, body, visual, reverse = false, tilt = 0 }: FeatureRowProps) {
   return (
-    <div style={{
+    <div data-reveal style={{
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center',
       padding: '40px 0',
       direction: reverse ? 'rtl' : 'ltr',
@@ -80,68 +84,20 @@ function FeatureRow({ eyebrow, title, body, visual, reverse = false, tilt = 0 }:
 
 function Never({ text }: { text: string }) {
   return (
-    <li style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+    <li data-reveal style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <svg
         width="20" height="20" viewBox="0 0 24 24"
         fill="none" stroke="var(--accent)" strokeWidth={1.7} strokeLinecap="round"
         style={{ flex: '0 0 auto', marginTop: 2 }}
       >
         <circle cx="12" cy="12" r="9" />
-        <path d="M6 17 18 7" />
+        <path data-draw d="M6 17 18 7" />
       </svg>
       <span style={{ fontSize: 16, color: 'var(--ink)' }}>{text}</span>
     </li>
   );
 }
 
-
-// ─── Feature journal ──────────────────────────────────────────────────────────
-
-function FeatureJournal() {
-  return (
-    <InkCard hand handIntensity={2.2} className="paper-bg" style={{ padding: '28px 32px 28px 56px', position: 'relative', minHeight: 220 }}>
-      <div style={{ position: 'absolute', left: 36, top: 0, bottom: 0, width: 1, background: 'color-mix(in oklab, var(--accent) 35%, transparent)', opacity: 0.45 }} />
-      <div style={{ position: 'absolute', left: 14, top: 30, color: 'var(--accent)', opacity: 0.7 }}>
-        <MarginDoodle kind="star" />
-      </div>
-      <div style={{ position: 'absolute', left: 14, bottom: 28, color: 'var(--accent)', opacity: 0.7 }}>
-        <MarginDoodle kind="heart" />
-      </div>
-      <div className="hand" style={{ fontSize: 22, color: 'var(--ink)', lineHeight: 1.4, transform: 'rotate(-0.6deg)' }}>
-        Friday, May 23
-      </div>
-      <div className="hand" style={{ fontSize: 21, color: 'var(--ink)', lineHeight: 1.5, marginTop: 12 }}>
-        Sat outside with coffee for fifteen minutes before opening anything. The morning felt like it was holding still on purpose. I think I needed that.
-      </div>
-    </InkCard>
-  );
-}
-
-// ─── Feature wellness ─────────────────────────────────────────────────────────
-
-function FeatureWellness() {
-  return (
-    <InkCard hand handIntensity={2.2} style={{ padding: 28, position: 'relative', minHeight: 220 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-        <div style={{ flex: '0 0 auto' }}>
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="44" fill="none" stroke="var(--ink-border)" strokeWidth="20" />
-            <path d="M 60 16 A 44 44 0 0 1 96 80" stroke="var(--accent)" strokeWidth="20" fill="none" strokeLinecap="round" opacity="0.7" />
-            <text x="60" y="58" textAnchor="middle" fontFamily="Fraunces" fontStyle="italic" fontSize="16" fill="var(--ink)">luteal</text>
-            <text x="60" y="74" textAnchor="middle" fontFamily="DM Sans" fontSize="9" fill="var(--ink-muted)" letterSpacing="2">phase</text>
-          </svg>
-        </div>
-        <div>
-          <div className="eyebrow" style={{ marginBottom: 6 }}>Days 17 – 28</div>
-          <div className="serif" style={{ fontSize: 22, fontWeight: 500, marginBottom: 4 }}>Tending</div>
-          <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.5, maxWidth: 220 }}>
-            Inward, careful, sometimes prickly. Shorter to-do lists are kindness here.
-          </p>
-        </div>
-      </div>
-    </InkCard>
-  );
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -183,6 +139,8 @@ export default function Page() {
         </div>
       </section>
 
+      {/* Everything below the hero reveals on scroll — hero keeps its Framer entrance */}
+      <ScrollReveal>
       <HowItWorks />
 
       <GetsToKnowYou />
@@ -193,7 +151,7 @@ export default function Page() {
 
       {/* ─── Belief strip ──────────────────────────────────── */}
       <section style={{ padding: '0 40px 72px', maxWidth: 1080, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 22 }}>
+        <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 22 }}>
           <h2 className="serif italic" style={{ fontSize: 30, fontWeight: 400 }}>
             What Solace believes
           </h2>
@@ -248,7 +206,7 @@ export default function Page() {
       </section>
 
       {/* ─── Quote ─────────────────────────────────────────── */}
-      <section style={{ padding: '0 40px 72px', maxWidth: 880, margin: '0 auto', textAlign: 'center' }}>
+      <section data-reveal style={{ padding: '0 40px 72px', maxWidth: 880, margin: '0 auto', textAlign: 'center' }}>
         <InkCard hand handIntensity={2.4} style={{ padding: '48px 56px', background: 'color-mix(in oklab, var(--accent-wash) 60%, var(--surface))' }}>
           <div style={{ fontSize: 48, lineHeight: 0.6, color: 'var(--accent)', marginBottom: 8 }} className="serif italic">&quot;</div>
           <p className="serif italic" style={{ fontSize: 26, lineHeight: 1.35, fontWeight: 400, color: 'var(--ink)', marginBottom: 18 }}>
@@ -264,6 +222,7 @@ export default function Page() {
       {/* ─── Privacy ───────────────────────────────────────── */}
       <section style={{ padding: '0 40px 72px', maxWidth: 1080, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 36, alignItems: 'center' }}>
+          <div data-reveal>
           <InkCard hand handIntensity={2.2} variant="paper" style={{ padding: 36 }}>
             <Icon.Lock size={22} />
             <div className="eyebrow" style={{ marginTop: 12, marginBottom: 6 }}>A small promise</div>
@@ -277,8 +236,9 @@ export default function Page() {
               feelings back at you.
             </p>
           </InkCard>
+          </div>
           <div>
-            <h3 className="serif italic" style={{ fontSize: 32, fontWeight: 400, marginBottom: 18, lineHeight: 1.15 }}>
+            <h3 data-reveal className="serif italic" style={{ fontSize: 32, fontWeight: 400, marginBottom: 18, lineHeight: 1.15 }}>
               The things we will never do.
             </h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -292,6 +252,7 @@ export default function Page() {
       </section>
 
       <FinalCTA />
+      </ScrollReveal>
 
       <LandingFooter />
     </div>

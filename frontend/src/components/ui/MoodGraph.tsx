@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import { gsap, useGSAP, MOTION_OK, DRAW, hidePath, drawPath } from '@/src/lib/motion';
 
 // Bitwise PRNG — identical output on every JS engine.
 // Math.sin is "implementation-approximated" per ECMAScript spec and can diverge
@@ -21,9 +22,11 @@ interface MoodGraphProps {
   width?:  number;
   height?: number;
   wobble?: number;
+  drawOnMount?: boolean; // ink-draw the mood line whenever its data changes
 }
 
-export default function MoodGraph({ data, energy, width = 600, height = 240, wobble = 0.2 }: MoodGraphProps) {
+export default function MoodGraph({ data, energy, width = 600, height = 240, wobble = 0.2, drawOnMount = false }: MoodGraphProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
   const padX = 28;
   const padTop = 18;
   const padBottom = 18;
@@ -77,8 +80,39 @@ export default function MoodGraph({ data, energy, width = 600, height = 240, wob
 
   const refs = [1, 2.5, 4];
 
+  // Mood line draws in, dots appear as the ink passes them, then the energy
+  // line fades in. The energy line is never stroke-drawn — a dashoffset draw
+  // would wipe out its "6 3" dash pattern.
+  useGSAP(() => {
+    const svg = svgRef.current;
+    if (!drawOnMount || !svg) return;
+    gsap.matchMedia().add(MOTION_OK, () => {
+      const line = svg.querySelector<SVGPathElement>('[data-line="mood"]');
+      const energyLine = svg.querySelector('[data-line="energy"]');
+      const dots = svg.querySelectorAll('[data-dot]');
+      const tl = gsap.timeline();
+      if (line) {
+        hidePath(line);
+        tl.add(drawPath(line), 0);
+      }
+      if (dots.length) {
+        tl.from(dots, {
+          opacity: 0,
+          duration: 0.3,
+          stagger: (DRAW.duration * 0.8) / dots.length,
+          ease: 'power1.out',
+          clearProps: 'opacity',
+        }, 0.1);
+      }
+      if (energyLine) {
+        tl.from(energyLine, { opacity: 0, duration: 0.6, ease: 'power1.out', clearProps: 'opacity' }, 0.6);
+      }
+    });
+  }, { scope: svgRef, dependencies: [path, energyPath, drawOnMount], revertOnUpdate: true });
+
   return (
     <svg
+      ref={svgRef}
       width="100%"
       height={height}
       viewBox={`0 0 ${width} ${height}`}
@@ -101,16 +135,16 @@ export default function MoodGraph({ data, energy, width = 600, height = 240, wob
         );
       })}
       {energyPath && (
-        <path d={energyPath} fill="none" stroke="var(--accent-soft)" strokeWidth="1.8"
+        <path data-line="energy" d={energyPath} fill="none" stroke="var(--accent-soft)" strokeWidth="1.8"
           strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6 3"
           filter="url(#ink-soften)" opacity="0.75" />
       )}
-      <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2.6"
+      <path data-line="mood" d={path} fill="none" stroke="var(--accent)" strokeWidth="2.6"
         strokeLinecap="round" strokeLinejoin="round" filter="url(#ink-soften)" />
       {pts.map((p, i) => {
         const isLast = i === pts.length - 1;
         return (
-          <g key={i}>
+          <g key={i} data-dot>
             <circle cx={p.x} cy={p.y} r={isLast ? 16 : 7} fill="var(--accent)"
               opacity={isLast ? 0.28 : 0.22} filter="url(#ink-blob-soft)" />
             <circle cx={p.x} cy={p.y} r={isLast ? 9.5 : 4.4} fill="var(--accent)" />

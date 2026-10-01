@@ -6,6 +6,7 @@ export default function JournalMoment() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 40px' }}>
 
         <h2
+          data-reveal
           className="serif"
           style={{
             fontSize: 'clamp(28px, 3vw, 42px)',
@@ -16,7 +17,7 @@ export default function JournalMoment() {
           Yours alone. Always.
         </h2>
 
-        <p style={{
+        <p data-reveal style={{
           fontSize: 17,
           color: 'var(--ink-soft)',
           maxWidth: 480,
@@ -28,7 +29,7 @@ export default function JournalMoment() {
         </p>
 
         {/* Journal card */}
-        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div data-reveal style={{ maxWidth: 560, margin: '0 auto' }}>
           <InkCard
             hand
             handIntensity={2.2}

@@ -399,6 +399,17 @@ a:focus-visible,
   * { animation-duration: 0.001ms !important; transition-duration: 200ms !important; }
 }
 
+/* ── Lenis smooth scroll (SmoothScroll.tsx) — rules from lenis/dist/lenis.css ── */
+
+html.lenis,
+html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+/* Nested scrollers (e.g. the future journal editor) opt out with data-lenis-prevent */
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
 /* ── Section layout utilities ────────────────────────────────────────────── */
 
 .section-surface { background: var(--surface); }

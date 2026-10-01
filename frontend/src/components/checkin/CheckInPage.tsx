@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/src/hooks/use-auth'
+import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
 import InkCard from '@/src/components/ui/InkCard'
 import InkButton from '@/src/components/ui/InkButton'
 import { Icon } from '@/src/components/ui/Icons'
@@ -78,6 +79,9 @@ export default function CheckInPage() {
     setSuccess(true)
   }
 
+  const pageRef = useRef<HTMLDivElement>(null)
+  useInkEntrance(pageRef, !initialLoading && !success)
+
   if (success) return <SaveSuccess />
 
   if (initialLoading) {
@@ -93,10 +97,11 @@ export default function CheckInPage() {
   const shortDate = `${_months[_now.getMonth()]} ${_now.getDate()}`
 
   return (
-    <div className="checkin-page" style={{ maxWidth: 760 }}>
+    // data-enter wrappers stagger in once the form mounts (GSAP, use-ink-entrance)
+    <div className="checkin-page" style={{ maxWidth: 760 }} ref={pageRef}>
 
       {/* Header — date eyebrow left, handwritten date right */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20 }}>
+      <div data-enter style={{ display: 'flex', alignItems: 'flex-end', gap: 20 }}>
         <div style={{ flex: 1 }}>
           <div className="eyebrow" style={{ marginBottom: 6 }}>Today, just for a second</div>
           <h2 className="serif" style={{
@@ -112,21 +117,26 @@ export default function CheckInPage() {
       </div>
 
       {/* Mood picker — InkCard applied inside MoodPickerRow */}
-      <MoodPickerRow
-        value={form.moodScore}
-        onChange={v => patch({ moodScore: v })}
-      />
+      <div data-enter>
+        <MoodPickerRow
+          value={form.moodScore}
+          onChange={v => patch({ moodScore: v })}
+        />
+      </div>
 
       {/* Symptoms — InkCard applied inside ChipMultiSelect */}
-      <ChipMultiSelect
-        label="Body & mind notes"
-        subtitle="Tap anything that's true today. None of this is a diagnosis — just notes for you."
-        options={SYMPTOM_OPTIONS}
-        selected={form.symptoms}
-        onChange={v => patch({ symptoms: v })}
-      />
+      <div data-enter>
+        <ChipMultiSelect
+          label="Body & mind notes"
+          subtitle="Tap anything that's true today. None of this is a diagnosis — just notes for you."
+          options={SYMPTOM_OPTIONS}
+          selected={form.symptoms}
+          onChange={v => patch({ symptoms: v })}
+        />
+      </div>
 
-      {/* Sliders — grouped in one InkCard */}
+      {/* Sliders — grouped in one InkCard (wrapped: InkCard root has its own transform transition) */}
+      <div data-enter>
       <InkCard hand handIntensity={2.4} style={{ padding: 28 }}>
         <div className="eyebrow" style={{ marginBottom: 18 }}>The little things</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -137,20 +147,25 @@ export default function CheckInPage() {
           <StressRow      value={form.stressLevel   ?? 1}   onChange={v => patch({ stressLevel: v })} />
         </div>
       </InkCard>
+      </div>
 
       {/* Food groups — InkCard applied inside ChipMultiSelect */}
-      <ChipMultiSelect
-        label="What did you eat today?"
-        options={FOOD_GROUP_OPTIONS}
-        selected={form.foodGroups}
-        onChange={v => patch({ foodGroups: v })}
-      />
+      <div data-enter>
+        <ChipMultiSelect
+          label="What did you eat today?"
+          options={FOOD_GROUP_OPTIONS}
+          selected={form.foodGroups}
+          onChange={v => patch({ foodGroups: v })}
+        />
+      </div>
 
       {/* Notes — InkCard applied inside NotesField */}
-      <NotesField
-        value={form.notes}
-        onChange={v => patch({ notes: v })}
-      />
+      <div data-enter>
+        <NotesField
+          value={form.notes}
+          onChange={v => patch({ notes: v })}
+        />
+      </div>
 
       {/* Error */}
       {error && (
@@ -158,7 +173,7 @@ export default function CheckInPage() {
       )}
 
       {/* Submit */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingBottom: 32 }}>
+      <div data-enter style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingBottom: 32 }}>
         <InkButton variant="ghost" onClick={() => router.push('/dashboard')}>Save & close</InkButton>
         <InkButton
           variant="primary"

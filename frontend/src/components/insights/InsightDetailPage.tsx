@@ -8,6 +8,7 @@ import InkCard from '@/src/components/ui/InkCard'
 import InkButton from '@/src/components/ui/InkButton'
 import InsightCard from '@/src/components/ui/InsightCard'
 import type { InsightType } from '@/src/components/ui/InsightCard'
+import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const NOT_FOUND_MESSAGE = 'That insight could not be found.'
@@ -41,6 +42,9 @@ export default function InsightDetailPage({ id }: InsightDetailPageProps) {
     hasFetched.current = true
     fetchInsight()
   }, [fetchInsight])
+
+  const pageRef = useRef<HTMLDivElement>(null)
+  useInkEntrance(pageRef, !loading && insight !== null)
 
   if (loading) {
     return (
@@ -88,13 +92,14 @@ export default function InsightDetailPage({ id }: InsightDetailPageProps) {
   const d = new Date(insight.createdAt)
   const dateLabel = `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
 
+  // GSAP staggers the data-enter elements; the InsightCard keeps its own Framer entrance
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 24px' }}>
-      <Link href="/insights" style={{ fontSize: 13, color: 'var(--ink-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 28 }}>
+    <div ref={pageRef} style={{ maxWidth: 640, margin: '0 auto', padding: '48px 24px' }}>
+      <Link data-enter href="/insights" style={{ fontSize: 13, color: 'var(--ink-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 28 }}>
         ← Back to insights
       </Link>
 
-      <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 16px' }}>
+      <p data-enter style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 16px' }}>
         {dateLabel}
       </p>
 
@@ -107,18 +112,20 @@ export default function InsightDetailPage({ id }: InsightDetailPageProps) {
       />
 
       {insight.flags.length > 0 && (
-        <InkCard variant="soft" style={{ marginTop: 20, padding: '22px 28px' }}>
-          <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 12px' }}>
-            What we noticed
-          </p>
-          <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {insight.flags.map((flag) => (
-              <li key={flag} style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-                {humaniseFlag(flag)}
-              </li>
-            ))}
-          </ul>
-        </InkCard>
+        <div data-enter>
+          <InkCard variant="soft" style={{ marginTop: 20, padding: '22px 28px' }}>
+            <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-muted)', margin: '0 0 12px' }}>
+              What we noticed
+            </p>
+            <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {insight.flags.map((flag) => (
+                <li data-enter key={flag} style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.5 }}>
+                  {humaniseFlag(flag)}
+                </li>
+              ))}
+            </ul>
+          </InkCard>
+        </div>
       )}
     </div>
   )

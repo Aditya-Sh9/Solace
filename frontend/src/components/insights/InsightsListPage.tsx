@@ -9,6 +9,7 @@ import type { InsightType } from '@/src/components/ui/InsightCard'
 import InsightsHeader from './InsightsHeader'
 import InsightsEmpty  from './InsightsEmpty'
 import RefreshButton  from './RefreshButton'
+import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
 import InkCard   from '@/src/components/ui/InkCard'
 import InkButton from '@/src/components/ui/InkButton'
 
@@ -38,6 +39,9 @@ export default function InsightsListPage() {
     if (fresh.length === 0) setHasData(false)
     else setInsights(prev => [...fresh, ...prev])
   }
+
+  const pageRef = useRef<HTMLDivElement>(null)
+  useInkEntrance(pageRef, !loading && !error)
 
   if (loading) {
     return (
@@ -72,15 +76,18 @@ export default function InsightsListPage() {
     )
   }
 
+  // GSAP enters the header + empty state; the cards keep their Framer stagger
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+    <div ref={pageRef} style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
+      <div data-enter style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
         <InsightsHeader />
         <RefreshButton onRefreshed={handleRefreshed} />
       </div>
 
       {insights.length === 0 ? (
-        <InsightsEmpty hasEnoughData={hasData} onRefreshed={handleRefreshed} />
+        <div data-enter>
+          <InsightsEmpty hasEnoughData={hasData} onRefreshed={handleRefreshed} />
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {insights.map((insight, i) => (

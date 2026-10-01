@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces, Caveat, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
+import SmoothScroll from "@/src/components/animations/SmoothScroll";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -53,7 +54,7 @@ export default function RootLayout({
     >
       <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

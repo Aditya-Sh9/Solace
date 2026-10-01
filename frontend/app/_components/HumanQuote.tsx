@@ -8,6 +8,7 @@ export default function HumanQuote() {
       }}
     >
       <div
+        data-reveal
         style={{
           maxWidth: 680,
           margin: '0 auto',

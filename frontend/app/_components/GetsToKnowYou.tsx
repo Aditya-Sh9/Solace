@@ -6,6 +6,7 @@ function SparkIcon() {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       <path
+        data-draw
         d="M14 3 L15.3 12.7 L25 14 L15.3 15.3 L14 25 L12.7 15.3 L3 14 L12.7 12.7 Z"
         stroke="var(--accent)"
         strokeWidth="1.6"
@@ -21,17 +22,20 @@ function PlantIcon() {
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       {/* stem */}
       <path
+        data-draw
         d="M14 25 C13.6 20 13.8 15.5 14 11"
         stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round"
       />
       {/* left leaf */}
       <path
+        data-draw
         d="M14 17 C12 15 8 14 7 11 C10 11 13.5 14 14 17"
         stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
         fill="color-mix(in oklab, var(--accent-wash) 80%, transparent)"
       />
       {/* right leaf */}
       <path
+        data-draw
         d="M14 13 C16 11 20 9.5 21 7 C18 8 14.5 11 14 13"
         stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
         fill="color-mix(in oklab, var(--accent-wash) 80%, transparent)"
@@ -48,6 +52,7 @@ export default function GetsToKnowYou() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 40px' }}>
 
         <h2
+          data-reveal
           className="serif italic"
           style={{
             fontSize: 'clamp(28px, 3vw, 42px)',
@@ -58,7 +63,7 @@ export default function GetsToKnowYou() {
           After a while, it stops guessing.
         </h2>
 
-        <p style={{
+        <p data-reveal style={{
           fontSize: 17,
           color: 'var(--ink-soft)',
           maxWidth: 560,
@@ -71,6 +76,8 @@ export default function GetsToKnowYou() {
         </p>
 
         <div className="knows-you-cards" style={{ maxWidth: 640, margin: '0 auto' }}>
+          {/* data-reveal on wrappers, not InkCard roots (their transform transition would fight GSAP) */}
+          <div data-reveal>
           <InkCard hand handIntensity={2.0} style={{ padding: 28, textAlign: 'left' }}>
             <div style={{ marginBottom: 14 }}>
               <SparkIcon />
@@ -86,7 +93,9 @@ export default function GetsToKnowYou() {
               In the beginning, we use research-backed patterns to surface what might be connected.
             </p>
           </InkCard>
+          </div>
 
+          <div data-reveal>
           <InkCard hand handIntensity={2.0} style={{ padding: 28, textAlign: 'left' }}>
             <div style={{ marginBottom: 14 }}>
               <PlantIcon />
@@ -102,9 +111,10 @@ export default function GetsToKnowYou() {
               After a few weeks of check-ins, the observations become specific to you — not a general user.
             </p>
           </InkCard>
+          </div>
         </div>
 
-        <p style={{
+        <p data-reveal style={{
           marginTop: 28,
           fontSize: 13,
           color: 'var(--ink-muted)',

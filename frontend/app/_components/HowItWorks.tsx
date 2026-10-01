@@ -5,6 +5,7 @@ function WobblyCircle({ d, number }: { d: string; number: string }) {
     <div style={{ width: 44, height: 44, position: 'relative', marginBottom: 20 }}>
       <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
         <path
+          data-draw
           d={d}
           stroke="var(--accent)"
           strokeWidth="1.8"
@@ -37,7 +38,7 @@ interface StepProps {
 
 function Step({ circleD, number, title, copy, note }: StepProps) {
   return (
-    <div className="how-it-works-step">
+    <div className="how-it-works-step" data-reveal>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <WobblyCircle d={circleD} number={number} />
       </div>
@@ -66,7 +67,8 @@ function Step({ circleD, number, title, copy, note }: StepProps) {
 
 function Arrow() {
   return (
-    <div className="how-it-works-arrow" aria-hidden="true">
+    // Wipe instead of stroke-draw: the shaft's dasharray must survive (see ScrollReveal)
+    <div className="how-it-works-arrow" aria-hidden="true" data-reveal="wipe">
       <svg width="36" height="16" viewBox="0 0 36 16" fill="none">
         <path
           d="M 0,8 L 26,8"
@@ -90,6 +92,7 @@ export default function HowItWorks() {
     <section className="section-surface section-pad">
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 40px' }}>
         <h2
+          data-reveal
           className="serif"
           style={{
             fontSize: 'clamp(28px, 3vw, 40px)',
