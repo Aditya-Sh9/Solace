@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ThemePicker, Icon } from '@/src/components/ui';
+import { ThemePicker } from '@/src/components/ui';
 import { useTheme } from '@/src/hooks/use-theme';
 
 export default function LandingNav() {
@@ -33,9 +33,10 @@ export default function LandingNav() {
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <ThemePicker theme={theme} mode={mode} setTheme={setTheme} setMode={setMode} />
-        <Link href="/signup" className="ink-btn ink-btn--primary ink-btn--sm">
-          Begin
-          <Icon.ChevronRight size={13} />
+        {/* The hero owns "Begin" — the nav serves returning people. proxy.ts sends
+            anyone already signed in straight on to /dashboard. */}
+        <Link href="/login" className="ink-btn ink-btn--ghost ink-btn--sm">
+          Log in
         </Link>
       </div>
     </header>

@@ -566,6 +566,9 @@ html.lenis body { height: auto; }
   max-width: 900px;
   margin: 0 auto;
 }
+/* Grid items default to min-width:auto, so the mood graph's SVG could force its
+   card wider than a phone screen. Let items shrink to the column. */
+.dashboard-grid > * { min-width: 0; }
 
 .stat-card {
   padding: 18px 20px;
@@ -634,4 +637,74 @@ html.lenis body { height: auto; }
 /* OAuth row collapses to 1 column on very narrow screens */
 @media (max-width: 480px) {
   .oauth-row { grid-template-columns: 1fr !important; }
+}
+
+/* ── Hero margin note (replaces the old eyebrow pill) ───────────────────── */
+
+.hero-margin-note {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin: 0 0 6px -4px;
+  transform: rotate(-2deg);
+  transform-origin: left bottom;
+}
+.hero-margin-note .hand {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ink-muted);
+}
+.hero-margin-arrow {
+  flex-shrink: 0;
+  margin-bottom: -14px;
+}
+@media (max-width: 720px) {
+  .hero-margin-arrow { display: none; }
+}
+
+/* ── App route transitions (native View Transitions) ────────────────────── */
+/* Tabs are siblings, so pages crossfade with a small rise — no directional
+   slide. Exit is shorter than enter so navigation never feels sluggish. */
+
+::view-transition-old(.ink-page) {
+  animation: 160ms ease-in both ink-vt-out;
+}
+::view-transition-new(.ink-page) {
+  animation: 280ms cubic-bezier(.34, 1.4, .64, 1) 60ms both ink-vt-in;
+}
+@keyframes ink-vt-out {
+  to { opacity: 0; }
+}
+@keyframes ink-vt-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Nav stays put while the page underneath changes. Separate names because a
+   name must be unique among displayed elements (only one nav shows at a time). */
+.desktop-nav { view-transition-name: app-nav; }
+.mobile-nav  { view-transition-name: app-nav-mobile; }
+::view-transition-group(app-nav),
+::view-transition-group(app-nav-mobile) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(app-nav),
+::view-transition-old(app-nav-mobile) { display: none; }
+::view-transition-new(app-nav),
+::view-transition-new(app-nav-mobile) { animation: none; }
+
+/* Root snapshot (everything outside the named groups) must not crossfade too */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }

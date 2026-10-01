@@ -89,7 +89,7 @@ function Arrow() {
 
 export default function HowItWorks() {
   return (
-    <section className="section-surface section-pad">
+    <section id="how-it-works" className="section-surface section-pad" style={{ scrollMarginTop: 72 }}>
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 40px' }}>
         <h2
           data-reveal

@@ -181,7 +181,7 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
         </div>
         {/* X-axis date labels */}
         <div style={{
-          display: 'flex', justifyContent: 'space-between', marginTop: 28,
+          display: 'flex', justifyContent: points.length === 1 ? 'center' : 'space-between', marginTop: 28,
           padding: '0 28px', color: 'var(--ink-muted)', fontSize: 11, letterSpacing: '0.08em',
         }}>
           {dateLabels.map((d, i) => (

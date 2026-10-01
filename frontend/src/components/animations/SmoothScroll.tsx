@@ -19,7 +19,9 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     if (prefersReducedMotion()) return;
 
     const ScrollTrigger = ensureScrollTrigger();
-    const lenis = new Lenis({ autoRaf: false });
+    // anchors: in-page hash links (landing "See how it works") glide instead of
+    // jumping. Lenis honours the target's scroll-margin-top (clears the sticky nav).
+    const lenis = new Lenis({ autoRaf: false, anchors: true });
     lenisRef.current = lenis;
 
     // Drive Lenis from GSAP's ticker so ScrollTrigger and Lenis read the

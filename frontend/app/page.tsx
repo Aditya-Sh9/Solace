@@ -1,3 +1,9 @@
+// Intentional deviations from design-reference/screens-landing.jsx (2026-10-01):
+// - The "A quiet companion" dot+eyebrow above the hero is replaced by a
+//   handwritten margin note (HeroText) — the pill read as a generic AI template.
+// - Hero CTAs carry distinct intents: start (/signup) and learn (#how-it-works).
+//   The reference's two `onEnter` buttons both opened the app, and the nav
+//   already offered the same action — three buttons, one destination.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import {
@@ -111,24 +117,17 @@ export default function Page() {
       <section style={{ padding: '40px 40px 80px', maxWidth: 1180, margin: '0 auto', position: 'relative' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 56, alignItems: 'center' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <span style={{
-                display: 'inline-block', width: 8, height: 8,
-                background: 'var(--accent)', borderRadius: '60% 50% 55% 65%',
-              }} />
-              <span className="eyebrow">A quiet companion</span>
-            </div>
-
             <HeroText />
 
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Link href="/app" className="ink-btn ink-btn--primary">
+              <Link href="/signup" className="ink-btn ink-btn--primary">
                 Begin a quiet practice
                 <Icon.ChevronRight size={14} />
               </Link>
-              <Link href="/app" className="ink-btn ink-btn--ghost">
-                See the app
-              </Link>
+              <a href="#how-it-works" className="ink-btn ink-btn--ghost">
+                See how it works
+                <Icon.ChevronDown size={14} />
+              </a>
               <span className="hand" style={{ fontSize: 17, color: 'var(--ink-muted)', marginLeft: 6 }}>
                 free · no streaks · no shame
               </span>

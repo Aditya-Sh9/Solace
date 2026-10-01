@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import type { ReactNode } from 'react'
+import { ViewTransition, type ReactNode } from 'react'
 import TopNav from '@/src/components/ui/TopNav'
 import BottomNav from '@/src/components/ui/BottomNav'
 import ThemePicker from '@/src/components/ui/ThemePicker'
@@ -36,7 +36,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <main className="app-main">
-        {children}
+        {/* Keyed by route so each tab change is an exit + enter pair that the
+            browser crossfades (CSS: .ink-page in globals.css). default="none"
+            keeps unrelated transitions (e.g. range-filter fetches) still. */}
+        <ViewTransition key={pathname} enter="ink-page" exit="ink-page" default="none">
+          <div>{children}</div>
+        </ViewTransition>
       </main>
 
       <BottomNav />

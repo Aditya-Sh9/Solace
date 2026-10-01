@@ -17,6 +17,21 @@ export default function HeroText() {
 
   return (
     <>
+      {/* Margin note instead of a product eyebrow — penciled in, not printed */}
+      <motion.div className="hero-margin-note" {...fade(0, 800)}>
+        <span className="hand">if something&apos;s felt off lately —</span>
+        <svg
+          className="hero-margin-arrow"
+          width="34" height="30" viewBox="0 0 34 30"
+          fill="none" stroke="var(--accent)" strokeWidth={1.6}
+          strokeLinecap="round" strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 4.5c7.5-1.2 15.8 1.4 19.6 8.1 2 3.6 2.3 7.8 1.4 12.1" />
+          <path d="M19.8 21.4l4.4 4.1 3.3-5.1" />
+        </svg>
+      </motion.div>
+
       <motion.h1
         className="serif"
         style={{

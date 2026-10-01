@@ -76,6 +76,11 @@ export const Icon = {
       <path d="M14.4 6 8 12l6.4 6" />
     </svg>
   ),
+  ChevronDown: ({ size = 18, color = 'currentColor' }: IconProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...b(color)}>
+      <path d="M6 9.6 12 16l6-6.4" />
+    </svg>
+  ),
   Edit: ({ size = 16, color = 'currentColor' }: IconProps) => (
     <svg width={size} height={size} viewBox="0 0 24 24" {...b(color)}>
       <path d="M4.6 19.4 5.4 16l9.6-9.6c.4-.4 1-.4 1.4 0L18 7.8c.4.4.4 1 0 1.4L8.4 18.8l-3.4.8c-.3.1-.5-.1-.4-.4Z" />

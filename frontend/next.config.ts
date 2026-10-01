@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // React <ViewTransition> on route navigations — app tab crossfade (AppShell)
+    viewTransition: true,
+  },
 };
 
 export default nextConfig;
