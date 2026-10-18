@@ -199,13 +199,18 @@ export function useJournal() {
     }
   }, [])
 
+  /** Server delete only — the page stays on screen so the tear can play over it. */
   const remove = useCallback(async (id: string): Promise<string | null> => {
     const { error } = await deleteJournalEntry(id)
     if (error) return error
     recordsRef.current = recordsRef.current.filter(r => r.id !== id)
-    setPages(prev => prev.filter(p => p.id !== id))
     return null
   }, [])
 
-  return { status, pages, hasMore, usesPassphrase, retry, unlock, choosePassphrase, loadOlder, save, remove }
+  /** Take an already-deleted page off the screen. */
+  const dropPage = useCallback((id: string) => {
+    setPages(prev => prev.filter(p => p.id !== id))
+  }, [])
+
+  return { status, pages, hasMore, usesPassphrase, retry, unlock, choosePassphrase, loadOlder, save, remove, dropPage }
 }

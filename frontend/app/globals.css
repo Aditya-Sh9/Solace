@@ -812,6 +812,38 @@ html.lenis body { height: auto; }
   animation: ink-fade-in 480ms ease both;
 }
 
+/* Scribbled-out old words (edit animation + "see what it said before"). */
+.journal-scribbled { margin-bottom: 8px; color: var(--ink-muted); }
+.journal-scribbled-line { position: relative; min-height: 32px; width: fit-content; max-width: 100%; }
+.journal-previous { margin-top: 18px; }
+.journal-previous-toggle {
+  background: transparent; border: none; padding: 2px 0; cursor: pointer;
+  font-size: 17px; color: var(--ink-muted);
+  text-decoration: underline dashed var(--ink-faint); text-underline-offset: 4px;
+}
+.journal-previous-toggle:hover { color: var(--ink-soft); }
+.journal-previous-body {
+  margin-top: 10px; padding: 12px 0 0 14px;
+  border-left: 1px dashed var(--ink-border);
+  animation: ink-fade-in 480ms cubic-bezier(.34,1.4,.64,1) both;
+}
+.journal-previous-body .eyebrow { margin-bottom: 6px; font-family: var(--font-sans); }
+
+/* On-device dictation ("speak instead"). */
+.journal-dictation { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; max-width: 100%; }
+.journal-dictation .ink-btn[aria-disabled="true"] { opacity: 0.55; }
+.journal-dictation-interim { font-size: 17px; color: var(--ink-muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-dictation-note {
+  flex-basis: 100%; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  font-size: 13px; line-height: 1.45; color: var(--ink-soft); max-width: 420px;
+}
+.journal-dictation-actions { display: inline-flex; gap: 6px; }
+.journal-ink-wave line { transform-origin: center; transform-box: fill-box; animation: ink-wave 900ms ease-in-out infinite; }
+@keyframes ink-wave {
+  0%, 100% { transform: scaleY(0.45); }
+  50%      { transform: scaleY(1.15); }
+}
+
 /* No mobile reference exists (MISSING_REFERENCES.md): spine becomes a tab strip. */
 @media (max-width: 720px) {
   .journal-layout { grid-template-columns: 1fr; gap: 18px; }

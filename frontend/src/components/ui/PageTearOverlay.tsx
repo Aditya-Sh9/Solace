@@ -1,16 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface PageTearOverlayProps {
   onDone?: () => void;
 }
 
 export default function PageTearOverlay({ onDone }: PageTearOverlayProps) {
+  // Held in a ref so a parent re-render (new callback identity) can't restart the tear.
+  const onDoneRef = useRef(onDone);
+  useEffect(() => { onDoneRef.current = onDone; }, [onDone]);
+
   useEffect(() => {
-    const t = setTimeout(() => onDone?.(), 900);
+    const t = setTimeout(() => onDoneRef.current?.(), 900);
     return () => clearTimeout(t);
-  }, [onDone]);
+  }, []);
 
   return (
     <div style={{

@@ -1,9 +1,11 @@
 'use client'
 
 // Journal orchestrator — built to screens-journal.jsx. Any number of pages per day: "new"
-// always starts a fresh unsaved page, created on first save. Deviations from
-// the reference (inline delete confirm, unlock/passphrase card, mobile layout) are noted in
-// the child components and MISSING_REFERENCES.md.
+// always starts a fresh unsaved page, created on first save. Edits scribble out the old
+// words (720ms) and keep them as the page's previous version; deletes tear the page away
+// (900ms). Both play only after the server confirms. Deviations from the reference (inline
+// delete confirm, unlock/passphrase card, mobile layout) are noted in the child components
+// and MISSING_REFERENCES.md.
 
 import { useRef, useState, useMemo } from 'react'
 import type { JSONContent } from '@tiptap/core'
@@ -11,7 +13,8 @@ import { InkCard } from '@/src/components/ui'
 import DashboardError from '@/src/components/dashboard/DashboardError'
 import { useJournal, type JournalPage as JournalPageData } from '@/src/hooks/use-journal'
 import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
-import { EMPTY_DOC, type MoodIndex } from '@/src/lib/journal-payload'
+import { MOTION_OK } from '@/src/lib/motion'
+import { EMPTY_DOC, docToText, type MoodIndex } from '@/src/lib/journal-payload'
 import { todayISODate } from '@/src/lib/format/journal-date'
 import JournalSpine, { type SpineItem } from './JournalSpine'
 import JournalSheet, { type SheetPage } from './JournalSheet'
@@ -19,11 +22,16 @@ import JournalEmpty from './JournalEmpty'
 import JournalUnlock from './JournalUnlock'
 import JournalSkeleton from './JournalSkeleton'
 
-const NEW_KEY = 'new'
+const NEW_KEY     = 'new'
+const SCRIBBLE_MS = 720
+const REMOVED_MS  = 2200
 
 function toSheet(p: JournalPageData): SheetPage {
-  return { id: p.id, date: p.date, mood: p.mood, doc: p.doc, edited: p.edited, createdAt: p.createdAt, updatedAt: p.updatedAt, unreadable: p.unreadable }
+  return { id: p.id, date: p.date, mood: p.mood, doc: p.doc, previous: p.previous, edited: p.edited, createdAt: p.createdAt, updatedAt: p.updatedAt, unreadable: p.unreadable }
 }
+
+// Read in event handlers only — branching render on this would mismatch hydration.
+const isMotionOk = () => window.matchMedia(MOTION_OK).matches
 
 export default function JournalPage() {
   const journal = useJournal()
@@ -34,6 +42,9 @@ export default function JournalPage() {
   const [draftNew,    setDraftNew]    = useState<SheetPage | null>(null)
   const [isEditing,   setIsEditing]   = useState(false)
   const [showRemoved, setShowRemoved] = useState(false)
+  const [scribble,    setScribble]    = useState<{ id: string; doc: JSONContent } | null>(null)
+  const [tearingId,   setTearingId]   = useState<string | null>(null)
+  const [listenOnOpen, setListenOnOpen] = useState(false)
 
   useInkEntrance(scopeRef, status === 'ready')
 
@@ -52,10 +63,18 @@ export default function JournalPage() {
   }, [pages, draftNew])
 
   const openPage = (key: string) => {
-    if (key === resolvedKey) return
+    if (key === resolvedKey || tearingId) return
     if (key !== NEW_KEY) setDraftNew(null)
     setActiveKey(key)
     setIsEditing(false)
+    setListenOnOpen(false)
+    setScribble(null)
+  }
+
+  const startEdit = (listen: boolean) => {
+    setScribble(null)
+    setListenOnOpen(listen)
+    setIsEditing(true)
   }
 
   // Always a fresh page — never reopens an earlier one. If a blank new page is already open,
@@ -64,21 +83,34 @@ export default function JournalPage() {
     if (!draftNew) {
       setDraftNew({ id: null, date: todayISODate(), mood: null, doc: EMPTY_DOC, edited: false, createdAt: null, updatedAt: null, unreadable: false })
     }
-    setIsEditing(true)
+    startEdit(false)
   }
 
   const cancelEdit = () => {
     setDraftNew(null)
     setIsEditing(false)
+    setListenOnOpen(false)
   }
 
   const saveDoc = async (doc: JSONContent) => {
     if (!activePage) return null
-    const { page, error } = await journal.save(activePage.id, activePage.date, { mood: activePage.mood, doc })
+    const oldText     = docToText(activePage.doc)
+    const isRewritten = !!activePage.id && !!oldText && oldText !== docToText(doc)
+    // A rewrite keeps the words it replaced as the page's one previous version; a save that
+    // changes nothing keeps whatever previous version the page already had.
+    const previous = isRewritten
+      ? { doc: activePage.doc, savedAt: activePage.updatedAt ?? activePage.createdAt ?? new Date().toISOString() }
+      : activePage.previous
+    const { page, error } = await journal.save(activePage.id, activePage.date, { mood: activePage.mood, doc, previous })
     if (error || !page) return error
     setDraftNew(null)
     setActiveKey(page.id)
     setIsEditing(false)
+    setListenOnOpen(false)
+    if (isRewritten && isMotionOk()) {
+      setScribble({ id: page.id, doc: activePage.doc })
+      window.setTimeout(() => setScribble(s => (s?.id === page.id ? null : s)), SCRIBBLE_MS)
+    }
     return null
   }
 
@@ -89,19 +121,27 @@ export default function JournalPage() {
       setDraftNew(prev => (prev ? { ...prev, mood } : prev))
       return null
     }
-    const { error } = await journal.save(activePage.id, activePage.date, { mood, doc: activePage.doc })
+    const { error } = await journal.save(activePage.id, activePage.date, { mood, doc: activePage.doc, previous: activePage.previous })
     return error
   }
 
+  const finishRemoval = (id: string) => {
+    journal.dropPage(id)
+    setTearingId(null)
+    setActiveKey(pages.find(p => p.id !== id)?.id ?? null)
+    setIsEditing(false)
+    setShowRemoved(true)
+    window.setTimeout(() => setShowRemoved(false), REMOVED_MS)
+  }
+
+  // Server first, then the tear — a page that failed to delete never looks torn out.
   const removePage = async () => {
     if (!activePage?.id) return null
     const id = activePage.id
     const error = await journal.remove(id)
     if (error) return error
-    setActiveKey(pages.find(p => p.id !== id)?.id ?? null)
-    setIsEditing(false)
-    setShowRemoved(true)
-    window.setTimeout(() => setShowRemoved(false), 2200)
+    if (isMotionOk()) setTearingId(id)
+    else finishRemoval(id)
     return null
   }
 
@@ -142,11 +182,16 @@ export default function JournalPage() {
             pageNumber={pageNumber}
             pageCount={spineItems.length}
             isEditing={isEditing}
-            onEdit={() => setIsEditing(true)}
+            scribbleDoc={scribble && scribble.id === activePage.id ? scribble.doc : null}
+            isTearing={!!tearingId && tearingId === activePage.id}
+            listenOnOpen={listenOnOpen}
+            onEdit={() => startEdit(false)}
+            onListen={() => startEdit(true)}
             onCancel={cancelEdit}
             onSave={saveDoc}
             onMood={saveMood}
             onRemove={removePage}
+            onTearDone={() => { if (tearingId) finishRemoval(tearingId) }}
           />
         ) : (
           <JournalEmpty onNew={startNew} />
