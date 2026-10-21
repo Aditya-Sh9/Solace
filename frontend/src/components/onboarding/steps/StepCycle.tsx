@@ -1,34 +1,31 @@
 'use client'
 
+import { useState } from 'react'
 import StepFrame from '../StepFrame'
-import Chip from '@/src/components/ui/Chip'
+import OptionCards from '../OptionCards'
+import type { Option } from '../OptionCards'
 import type { StepProps } from '../OnboardingShell'
 
-const OPTIONS = [
-  { label: 'Yes, track it', value: true,  tilt: -0.5 },
-  { label: 'No thanks',     value: false, tilt:  0.4 },
-  { label: 'Skip for now',  value: false, tilt: -0.3 },
+// "No thanks" and "Skip for now" both saved false, so they're one option now.
+const OPTIONS: Option<boolean>[] = [
+  { value: true,  label: 'Yes, add it',   sub: 'your cycle, alongside your patterns' },
+  { value: false, label: 'Not right now', sub: 'nothing changes' },
 ]
 
-export default function StepCycle({ onNext, onBack, isFirst }: StepProps) {
+export default function StepCycle({ data, onNext, onBack }: StepProps) {
+  const [selected, setSelected] = useState<boolean | undefined>(data.cycleTracking)
+
   return (
     <StepFrame
-      heading="One more thing — do you track your cycle?"
-      sub="Completely optional. We'll only use it to add context to your patterns."
-      onBack={onBack}
-      isFirst={isFirst}
+      eyebrow="Completely optional"
+      heading="One more thing — would you like to track your cycle?"
+      sub="We'd only use it to add context to your patterns — some weeks have their own weather."
+      onBack={() => onBack({ cycleTracking: selected })}
+      onNext={() => onNext({ cycleTracking: selected })}
+      canNext={selected !== undefined}
+      nextLabel="I'm ready"
     >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {OPTIONS.map(opt => (
-          <Chip
-            key={opt.label}
-            onClick={() => onNext({ cycleTracking: opt.value })}
-            tilt={opt.tilt}
-          >
-            {opt.label}
-          </Chip>
-        ))}
-      </div>
+      <OptionCards label="Track your cycle" options={OPTIONS} value={selected} onChange={setSelected} />
     </StepFrame>
   )
 }

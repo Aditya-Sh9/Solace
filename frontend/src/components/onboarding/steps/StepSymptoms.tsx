@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import StepFrame from '../StepFrame'
 import Chip from '@/src/components/ui/Chip'
-import InkButton from '@/src/components/ui/InkButton'
 import type { StepProps } from '../OnboardingShell'
 
+// Labels are sent as-is to the backend rule engine — change the wording there too, never only here.
 const SYMPTOMS = [
   { label: 'Fatigue',                  tilt: -0.5 },
   { label: 'Brain fog',                tilt:  0.4 },
@@ -21,7 +21,7 @@ const SYMPTOMS = [
   { label: 'Skin issues',              tilt:  0.3 },
 ]
 
-export default function StepSymptoms({ data, onNext, onBack, isFirst }: StepProps) {
+export default function StepSymptoms({ data, onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set(data.symptoms ?? []))
 
   function toggle(label: string) {
@@ -34,12 +34,14 @@ export default function StepSymptoms({ data, onNext, onBack, isFirst }: StepProp
 
   return (
     <StepFrame
+      eyebrow="No wrong answers"
       heading="What does 'off' feel like for you?"
       sub="Choose as many as feel true — or none, if none quite fit."
-      onBack={onBack}
-      isFirst={isFirst}
+      onBack={() => onBack({ symptoms: [...selected] })}
+      onNext={() => onNext({ symptoms: [...selected] })}
+      nextLabel={selected.size === 0 ? 'none quite fit' : 'next'}
     >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
+      <div role="group" aria-label="What feels off" className="onb-chips">
         {SYMPTOMS.map(s => (
           <Chip
             key={s.label}
@@ -51,9 +53,11 @@ export default function StepSymptoms({ data, onNext, onBack, isFirst }: StepProp
           </Chip>
         ))}
       </div>
-      <InkButton variant="primary" onClick={() => onNext({ symptoms: [...selected] })}>
-        Next
-      </InkButton>
+      <p className="hand onb-count" aria-live="polite">
+        {selected.size === 0 ? 'nothing picked — that counts too.'
+          : selected.size === 1 ? 'one feels true.'
+          : `${selected.size} feel true.`}
+      </p>
     </StepFrame>
   )
 }

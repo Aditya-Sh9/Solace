@@ -1,48 +1,77 @@
 'use client'
 
+// Built to screens-onboarding.jsx's StepCard: hand-drawn paper card, eyebrow, italic serif
+// title, sub-line, back/next footer. Deviations (2026-10-21): a corner illustration (`art`) and
+// a Caveat margin note (`note`) — our flow asks ten questions to the mock's four, and the bare
+// pages read as empty. Neither is in the reference; both reuse existing Illustrations.
+import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
+import InkCard from '@/src/components/ui/InkCard'
+import InkButton from '@/src/components/ui/InkButton'
 import { Icon } from '@/src/components/ui/Icons'
+import { MarginDoodle } from '@/src/components/ui/Illustrations'
 
 interface Props {
-  heading:  string
-  sub?:     string
-  children: ReactNode
-  onBack:   () => void
-  isFirst?: boolean
+  eyebrow:   string
+  heading:   string
+  sub?:      string
+  note?:     string
+  art?:      ReactNode
+  children:  ReactNode
+  onBack:    () => void
+  onNext:    () => void
+  nextLabel?: string
+  canNext?:  boolean
+  /** Off when the step autofocuses its own input instead. */
+  focusHeading?: boolean
 }
 
-export default function StepFrame({ heading, sub, children, onBack, isFirst }: Props) {
+export default function StepFrame({
+  eyebrow, heading, sub, note, art, children,
+  onBack, onNext, nextLabel = 'next', canNext = true, focusHeading = true,
+}: Props) {
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  // A new page replaced the old one; move screen-reader and keyboard focus to its question.
+  useEffect(() => {
+    if (focusHeading) headingRef.current?.focus({ preventScroll: true })
+  }, [focusHeading])
+
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        {!isFirst && (
-          <button
-            onClick={onBack}
-            type="button"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--ink-muted)', fontSize: 13, marginBottom: 24,
-              padding: 0, transition: 'color 200ms ease',
-            }}
-          >
-            <Icon.ChevronLeft size={16} /> Back
-          </button>
-        )}
-        <h2 className="serif" style={{
-          fontSize: 28, fontWeight: 500,
-          letterSpacing: '-0.01em', lineHeight: 1.2,
-          margin: '0 0 10px', color: 'var(--ink)',
-        }}>
-          {heading}
-        </h2>
-        {sub && (
-          <p style={{ margin: 0, fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.55 }}>
-            {sub}
-          </p>
-        )}
+    <InkCard hand handIntensity={2.4} className="onb-page">
+      <div className="onb-page-head">
+        <div style={{ minWidth: 0 }}>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>{eyebrow}</div>
+          <h2 ref={headingRef} tabIndex={-1} className="serif italic onb-title">
+            {heading}
+          </h2>
+          {sub && <p className="onb-sub">{sub}</p>}
+        </div>
+        {art && <div className="onb-art" aria-hidden="true">{art}</div>}
       </div>
+
       {children}
-    </div>
+
+      {note && (
+        <p className="hand onb-note">
+          <span aria-hidden="true" className="onb-note-doodle"><MarginDoodle kind="leaf" /></span>
+          {note}
+        </p>
+      )}
+
+      <div className="onb-footer">
+        <InkButton variant="ghost" size="sm" onClick={onBack} icon={<Icon.ChevronLeft size={14} />}>
+          back
+        </InkButton>
+        <InkButton
+          variant="primary"
+          onClick={onNext}
+          disabled={!canNext}
+          iconRight={<Icon.ChevronRight size={14} />}
+        >
+          {nextLabel}
+        </InkButton>
+      </div>
+    </InkCard>
   )
 }

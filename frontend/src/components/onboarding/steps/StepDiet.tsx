@@ -2,43 +2,33 @@
 
 import { useState } from 'react'
 import StepFrame from '../StepFrame'
-import Chip from '@/src/components/ui/Chip'
-import InkButton from '@/src/components/ui/InkButton'
+import OptionCards from '../OptionCards'
+import type { Option } from '../OptionCards'
 import type { StepProps } from '../OnboardingShell'
 import type { DietaryPattern } from '@/src/types/onboarding'
 
-const OPTIONS: { value: DietaryPattern; label: string; tilt: number }[] = [
-  { value: 'OMNIVORE',    label: 'Everything',  tilt: -0.5 },
-  { value: 'VEGETARIAN',  label: 'Vegetarian',  tilt:  0.4 },
-  { value: 'VEGAN',       label: 'Vegan',       tilt: -0.3 },
-  { value: 'PESCATARIAN', label: 'Pescatarian', tilt:  0.5 },
-  { value: 'OTHER',       label: 'Other',       tilt: -0.4 },
+const OPTIONS: Option<DietaryPattern>[] = [
+  { value: 'OMNIVORE',    label: 'A bit of everything', sub: 'no lines drawn' },
+  { value: 'VEGETARIAN',  label: 'Vegetarian',          sub: 'no meat or fish' },
+  { value: 'VEGAN',       label: 'Vegan',               sub: 'plants only' },
+  { value: 'PESCATARIAN', label: 'Pescatarian',         sub: 'fish, but no meat' },
+  { value: 'OTHER',       label: 'Something else',      sub: 'it has its own shape' },
 ]
 
-export default function StepDiet({ data, onNext, onBack, isFirst }: StepProps) {
+export default function StepDiet({ data, onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState<DietaryPattern | undefined>(data.dietaryPattern)
 
   return (
-    <StepFrame heading="How would you describe your eating?" onBack={onBack} isFirst={isFirst}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
-        {OPTIONS.map(opt => (
-          <Chip
-            key={opt.value}
-            active={selected === opt.value}
-            onClick={() => setSelected(opt.value)}
-            tilt={opt.tilt}
-          >
-            {opt.label}
-          </Chip>
-        ))}
-      </div>
-      <InkButton
-        variant="primary"
-        onClick={() => onNext({ dietaryPattern: selected })}
-        disabled={selected === undefined}
-      >
-        Next
-      </InkButton>
+    <StepFrame
+      eyebrow="No wrong answers"
+      heading="How would you describe your eating?"
+      sub="Just the broad shape of it."
+      note="it helps us read your check-ins later"
+      onBack={() => onBack({ dietaryPattern: selected })}
+      onNext={() => onNext({ dietaryPattern: selected })}
+      canNext={selected !== undefined}
+    >
+      <OptionCards label="Eating" options={OPTIONS} value={selected} onChange={setSelected} columns={2} />
     </StepFrame>
   )
 }

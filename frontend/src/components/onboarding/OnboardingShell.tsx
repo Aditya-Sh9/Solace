@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import type { ComponentType } from 'react'
 import ProgressBar from './ProgressBar'
+import FloatingBackground from '@/src/components/ui/FloatingBackground'
 import type { OnboardingFormData } from '@/src/types/onboarding'
+import StepSplash    from './steps/StepSplash'
 import StepNameAge   from './steps/StepNameAge'
 import StepEnergy    from './steps/StepEnergy'
 import StepActivity  from './steps/StepActivity'
@@ -22,12 +24,13 @@ import { useOnboardingGate } from '@/src/hooks/use-onboarding-gate'
 export interface StepProps {
   data:    OnboardingFormData
   onNext:  (updates: Partial<OnboardingFormData>) => void
-  onBack:  () => void
+  /** Takes the page's current answer too, so going back never loses it. */
+  onBack:  (updates?: Partial<OnboardingFormData>) => void
   isFirst?: boolean
 }
 
 const ALL_STEPS: ComponentType<StepProps>[] = [
-  StepNameAge, StepEnergy, StepActivity, StepDiet, StepSymptoms,
+  StepSplash, StepNameAge, StepEnergy, StepActivity, StepDiet, StepSymptoms,
   StepSleep, StepStress, StepGoal, StepGender, StepCycle, StepComplete,
 ]
 // Only "Male" loses the cycle section (backend services/cycle-access.ts), so the cycle
@@ -36,9 +39,9 @@ const ALL_STEPS: ComponentType<StepProps>[] = [
 const WITHOUT_CYCLE = ALL_STEPS.filter(s => s !== StepCycle)
 
 const variants = {
-  enter:  (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+  enter:  (dir: number) => ({ x: dir > 0 ? 24 : -24, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:   (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
+  exit:   (dir: number) => ({ x: dir > 0 ? -24 : 24, opacity: 0 }),
 }
 
 export default function OnboardingShell() {
@@ -90,46 +93,47 @@ function OnboardingSteps({ initialData }: { initialData: OnboardingFormData }) {
     setStep(prev => Math.min(prev + 1, steps.length - 1))
   }
 
-  function goBack() {
+  function goBack(updates: Partial<OnboardingFormData> = {}) {
     setDir(-1)
+    setData(prev => ({ ...prev, ...updates }))
     setStep(prev => Math.max(prev - 1, 0))
   }
 
   const StepComponent = steps[step]
+  // The splash and the closing page aren't questions, so they don't count as steps.
+  const questionCount = steps.length - 2
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', flexDirection: 'column',
-      background: 'var(--bg)', padding: '40px 24px 64px',
-    }}>
-      <div style={{ maxWidth: 480, width: '100%', margin: '0 auto' }}>
-        <ProgressBar step={step} total={steps.length} />
-      </div>
+    // reducedMotion="user" makes Framer skip transforms under prefers-reduced-motion without
+    // branching render output on useReducedMotion() (the hero's hydration bug, Phase 7 list).
+    <MotionConfig reducedMotion="user">
+      <div className="onb-shell">
+        <FloatingBackground density="minimal" />
+        <div className="onb-column">
+          <div className="onb-progress" style={{ visibility: step === 0 ? 'hidden' : 'visible' }}>
+            <ProgressBar current={step} total={questionCount} />
+          </div>
 
-      <div style={{
-        flex: 1, display: 'flex', alignItems: 'center',
-        justifyContent: 'center', marginTop: 40, overflow: 'hidden',
-      }}>
-        <AnimatePresence mode="wait" custom={dir}>
-          <motion.div
-            key={step}
-            custom={dir}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            style={{ width: '100%', maxWidth: 480 }}
-          >
-            <StepComponent
-              data={data}
-              onNext={goNext}
-              onBack={goBack}
-              isFirst={step === 0}
-            />
-          </motion.div>
-        </AnimatePresence>
+          <AnimatePresence mode="wait" custom={dir} initial={false}>
+            <motion.div
+              key={step}
+              custom={dir}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <StepComponent
+                data={data}
+                onNext={goNext}
+                onBack={goBack}
+                isFirst={step === 0}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   )
 }

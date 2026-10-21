@@ -31,8 +31,11 @@ export async function proxy(request: NextRequest) {
   if (!user && isProtected) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
+  // Signed-in → the onboarding gate, not /dashboard: LoginForm's router.refresh() re-requests
+  // /login and races its push('/onboarding'); sending both to the gate (which forwards onboarded
+  // people to /dashboard) means a new user can't skip onboarding whichever lands last.
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/onboarding', request.url))
   }
 
   return supabaseResponse

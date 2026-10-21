@@ -12,10 +12,12 @@ function mulberry32(seed: number) {
   }
 }
 
-interface Props { step: number; total: number }
+// `current` is the question number (1-based); anything past `total` reads as finished.
+interface Props { current: number; total: number }
 
-export default function ProgressBar({ step, total }: Props) {
-  const progress = step / (total - 1)
+export default function ProgressBar({ current, total }: Props) {
+  const isDone   = current > total
+  const progress = Math.min(current, total) / total
 
   const trackPath = useMemo(() => {
     const rng = mulberry32(42)
@@ -24,29 +26,30 @@ export default function ProgressBar({ step, total }: Props) {
       const y = 8 + (rng() - 0.5) * 4
       d += ` L ${x.toFixed(3)} ${y.toFixed(3)}`
     }
-    return d
+    // The loop stops at 390; finish at the edge so the track spans the caption below it.
+    return d + ' L 400.000 8.000'
   }, [])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-      <svg viewBox="0 0 400 16" style={{ flex: 1, height: 16, overflow: 'visible' }}>
+    <div>
+      {/* Lines only, no closed shapes, so stretching with "none" is safe here. */}
+      <svg viewBox="0 0 400 16" preserveAspectRatio="none" aria-hidden="true"
+        style={{ width: '100%', height: 16, overflow: 'visible', display: 'block' }}>
         <path d={trackPath} stroke="var(--ink-faint)" strokeWidth={2}
           fill="none" strokeLinecap="round" />
         <motion.path
           d={trackPath}
           stroke="var(--accent)" strokeWidth={3}
           fill="none" strokeLinecap="round"
-          initial={{ pathLength: 0 }}
+          initial={false}
           animate={{ pathLength: progress }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
         />
       </svg>
-      <span style={{
-        fontSize: 12, color: 'var(--ink-muted)',
-        whiteSpace: 'nowrap', fontWeight: 500,
-      }}>
-        {step + 1} / {total}
-      </span>
+      <div className="onb-progress-caption">
+        <span>{isDone ? 'all done' : `step ${current} of ${total}`}</span>
+        <span className="hand onb-progress-hint">no rush.</span>
+      </div>
     </div>
   )
 }

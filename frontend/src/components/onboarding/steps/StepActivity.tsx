@@ -2,42 +2,31 @@
 
 import { useState } from 'react'
 import StepFrame from '../StepFrame'
-import Chip from '@/src/components/ui/Chip'
-import InkButton from '@/src/components/ui/InkButton'
+import OptionCards from '../OptionCards'
+import type { Option } from '../OptionCards'
 import type { StepProps } from '../OnboardingShell'
 import type { ActivityLevel } from '@/src/types/onboarding'
 
-const OPTIONS: { value: ActivityLevel; label: string; tilt: number }[] = [
-  { value: 'SEDENTARY',          label: 'Mostly sitting', tilt: -0.5 },
-  { value: 'LIGHTLY_ACTIVE',     label: 'Light movement', tilt:  0.4 },
-  { value: 'MODERATELY_ACTIVE',  label: 'Fairly active',  tilt: -0.3 },
-  { value: 'VERY_ACTIVE',        label: 'Very active',    tilt:  0.5 },
+const OPTIONS: Option<ActivityLevel>[] = [
+  { value: 'SEDENTARY',         label: 'Mostly sitting', sub: 'desk, couch, commute' },
+  { value: 'LIGHTLY_ACTIVE',    label: 'Light movement', sub: 'walks, errands, the odd stairwell' },
+  { value: 'MODERATELY_ACTIVE', label: 'Fairly active',  sub: 'something that moves you, most days' },
+  { value: 'VERY_ACTIVE',       label: 'Very active',    sub: 'training, or on your feet all day' },
 ]
 
-export default function StepActivity({ data, onNext, onBack, isFirst }: StepProps) {
+export default function StepActivity({ data, onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState<ActivityLevel | undefined>(data.activityLevel)
 
   return (
-    <StepFrame heading="How active are you, day to day?" onBack={onBack} isFirst={isFirst}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
-        {OPTIONS.map(opt => (
-          <Chip
-            key={opt.value}
-            active={selected === opt.value}
-            onClick={() => setSelected(opt.value)}
-            tilt={opt.tilt}
-          >
-            {opt.label}
-          </Chip>
-        ))}
-      </div>
-      <InkButton
-        variant="primary"
-        onClick={() => onNext({ activityLevel: selected })}
-        disabled={selected === undefined}
-      >
-        Next
-      </InkButton>
+    <StepFrame
+      eyebrow="On an ordinary day"
+      heading="How much do you move, day to day?"
+      sub="Whatever's true right now. Nothing here is a grade."
+      onBack={() => onBack({ activityLevel: selected })}
+      onNext={() => onNext({ activityLevel: selected })}
+      canNext={selected !== undefined}
+    >
+      <OptionCards label="Daily movement" options={OPTIONS} value={selected} onChange={setSelected} />
     </StepFrame>
   )
 }

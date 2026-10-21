@@ -1,38 +1,36 @@
 'use client'
 
-// No design-reference screen asks this (see MISSING_REFERENCES.md) — built on StepCycle's
-// pattern: one tap answers and moves on.
+// No design-reference screen asks this (see MISSING_REFERENCES.md) — built on the reference's
+// "single" option cards like the other one-answer steps.
+import { useState } from 'react'
 import StepFrame from '../StepFrame'
-import Chip from '@/src/components/ui/Chip'
+import OptionCards from '../OptionCards'
+import type { Option } from '../OptionCards'
 import type { StepProps } from '../OnboardingShell'
 import type { Gender } from '@/src/types/onboarding'
 
-const OPTIONS: { label: string; value: Gender; tilt: number }[] = [
-  { label: 'Female',         value: 'FEMALE',      tilt: -0.5 },
-  { label: 'Male',           value: 'MALE',        tilt:  0.4 },
-  { label: 'Rather not say', value: 'UNDISCLOSED', tilt: -0.3 },
+const OPTIONS: Option<Gender>[] = [
+  { value: 'FEMALE',      label: 'Female' },
+  { value: 'MALE',        label: 'Male' },
+  { value: 'UNDISCLOSED', label: 'Rather not say', sub: 'completely fine' },
 ]
 
-export default function StepGender({ data, onNext, onBack, isFirst }: StepProps) {
+export default function StepGender({ data, onNext, onBack }: StepProps) {
+  const [selected, setSelected] = useState<Gender | undefined>(data.gender)
+
   return (
     <StepFrame
+      eyebrow="A quiet question"
       heading="Which of these fits you best?"
       sub="We only ask so we know whether to offer cycle-aware guidance. Nothing else changes."
-      onBack={onBack}
-      isFirst={isFirst}
+      note="we never share it with anyone"
+      onBack={() => onBack({ gender: selected })}
+      onNext={() => onNext({ gender: selected })}
+      canNext={selected !== undefined}
+      // Male skips the cycle question, so this is their last one.
+      nextLabel={selected === 'MALE' ? "I'm ready" : 'next'}
     >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {OPTIONS.map(opt => (
-          <Chip
-            key={opt.value}
-            active={data.gender === opt.value}
-            onClick={() => onNext({ gender: opt.value })}
-            tilt={opt.tilt}
-          >
-            {opt.label}
-          </Chip>
-        ))}
-      </div>
+      <OptionCards label="Gender" options={OPTIONS} value={selected} onChange={setSelected} />
     </StepFrame>
   )
 }
