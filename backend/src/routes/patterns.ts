@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth'
 import { prisma } from '../services/prisma'
-import { predictPatterns } from '../services/ml-client/client'
+import { predictPatterns, ML_CARD_TIMEOUT_MS } from '../services/ml-client/client'
 import { MlUnavailable, MlTimeout, MlSchemaError } from '../services/ml-client/errors'
 import { patternToCopy, bandPrediction, confidenceToWording } from '../services/ml-client/translate'
 import type { CheckInPayload } from '../services/ml-client/schema'
@@ -38,7 +38,7 @@ router.get('/', requireAuth, async (req, res) => {
   }))
 
   try {
-    const result = await predictPatterns(checkins)
+    const result = await predictPatterns(checkins, ML_CARD_TIMEOUT_MS)
 
     if (!result.trained) {
       res.json({

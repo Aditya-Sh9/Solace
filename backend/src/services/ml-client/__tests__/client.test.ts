@@ -48,6 +48,24 @@ describe('ml-client / predictPatterns', () => {
     await expect(promise).rejects.toBeInstanceOf(MlTimeout)
   })
 
+  it('waits for a longer timeout when one is passed (dashboard card)', async () => {
+    let aborted = false
+    vi.stubGlobal('fetch', (_url: string, opts?: RequestInit) =>
+      new Promise<never>((_resolve, reject) => {
+        opts?.signal?.addEventListener('abort', () => {
+          aborted = true
+          reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+        })
+      })
+    )
+    vi.useFakeTimers()
+    const promise = predictPatterns([], 12000)
+    vi.advanceTimersByTime(4100)
+    expect(aborted).toBe(false)
+    vi.advanceTimersByTime(8000)
+    await expect(promise).rejects.toBeInstanceOf(MlTimeout)
+  })
+
   it('throws MlSchemaError when response shape is wrong', async () => {
     vi.stubGlobal('fetch', () =>
       Promise.resolve({ ok: true, json: () => Promise.resolve({ unexpected: true }) })
