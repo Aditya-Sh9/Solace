@@ -9,6 +9,7 @@ import type { InsightType } from '@/src/components/ui/InsightCard'
 import InsightsHeader from './InsightsHeader'
 import InsightsEmpty  from './InsightsEmpty'
 import RefreshButton  from './RefreshButton'
+import RefreshNote    from './RefreshNote'
 import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
 import InkCard   from '@/src/components/ui/InkCard'
 import InkButton from '@/src/components/ui/InkButton'
@@ -19,6 +20,7 @@ export default function InsightsListPage() {
   const [loading,  setLoading]    = useState(true)
   const [error,    setError]      = useState(false)
   const [hasData,  setHasData]    = useState(true) // assume enough data until API says otherwise
+  const [note,     setNote]       = useState<string | null>(null)
 
   const fetchInsights = useCallback(async () => {
     setLoading(true)
@@ -79,10 +81,11 @@ export default function InsightsListPage() {
   // GSAP enters the header + empty state; the cards keep their Framer stagger
   return (
     <div ref={pageRef} style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
-      <div data-enter style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+      <div data-enter style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: note ? 16 : 32, flexWrap: 'wrap' }}>
         <InsightsHeader />
-        <RefreshButton onRefreshed={handleRefreshed} />
+        <RefreshButton onRefreshed={handleRefreshed} onMessage={setNote} />
       </div>
+      {note && <div style={{ marginBottom: 24 }}><RefreshNote message={note} /></div>}
 
       {insights.length === 0 ? (
         <div data-enter>

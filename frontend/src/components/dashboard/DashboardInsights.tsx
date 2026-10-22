@@ -6,6 +6,7 @@ import type { Insight } from '@/src/types/insight'
 import InsightCard from '@/src/components/ui/InsightCard'
 import type { InsightType } from '@/src/components/ui/InsightCard'
 import RefreshButton from '@/src/components/insights/RefreshButton'
+import RefreshNote from '@/src/components/insights/RefreshNote'
 import InsightsEmptyState from './InsightsEmptyState'
 
 interface DashboardInsightsProps {
@@ -14,6 +15,7 @@ interface DashboardInsightsProps {
 
 export default function DashboardInsights({ initialInsights }: DashboardInsightsProps) {
   const [insights, setInsights] = useState<Insight[]>(initialInsights)
+  const [note, setNote] = useState<string | null>(null)
 
   function handleRefreshed(fresh: Insight[]) {
     if (fresh.length > 0) {
@@ -29,8 +31,9 @@ export default function DashboardInsights({ initialInsights }: DashboardInsights
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
         <p className="stat-card-label" style={{ margin: 0 }}>Recent insights</p>
-        <RefreshButton onRefreshed={handleRefreshed} compact />
+        <RefreshButton onRefreshed={handleRefreshed} onMessage={setNote} compact />
       </div>
+      {note && <div style={{ marginBottom: 14 }}><RefreshNote message={note} /></div>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {insights.slice(0, 3).map((insight, i) => (
           <Link key={insight.id} href={`/insights/${insight.id}`} style={{ textDecoration: 'none', display: 'block' }}>

@@ -10,9 +10,11 @@ import type { Insight } from '@/src/types/insight'
 interface RefreshButtonProps {
   onRefreshed: (insights: Insight[]) => void
   compact?: boolean
+  /** When given, the parent shows the "no cards" message (as a RefreshNote) instead of the button. */
+  onMessage?: (message: string | null) => void
 }
 
-export default function RefreshButton({ onRefreshed, compact = false }: RefreshButtonProps) {
+export default function RefreshButton({ onRefreshed, compact = false, onMessage }: RefreshButtonProps) {
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -32,10 +34,12 @@ export default function RefreshButton({ onRefreshed, compact = false }: RefreshB
   async function handleRefresh() {
     setLoading(true)
     setErrorMsg(null)
+    onMessage?.(null)
     const { data, error } = await refreshInsights()
     setLoading(false)
     if (error) {
-      setErrorMsg(error)
+      if (onMessage) onMessage(error)
+      else setErrorMsg(error)
       return
     }
     if (data) {
@@ -50,7 +54,7 @@ export default function RefreshButton({ onRefreshed, compact = false }: RefreshB
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: compact ? 'flex-start' : 'center', gap: 6 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: onMessage ? 'flex-end' : 'center', gap: 6 }}>
       <button
         onClick={handleRefresh}
         disabled={loading}
@@ -80,7 +84,7 @@ export default function RefreshButton({ onRefreshed, compact = false }: RefreshB
       </button>
       {showAiStatus && <AiStatusNote status={aiStatus} now={now} />}
       {errorMsg && (
-        <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0, maxWidth: 320 }}>
+        <p role="status" style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0, maxWidth: 320, textAlign: 'center' }}>
           {errorMsg}
         </p>
       )}

@@ -15,7 +15,7 @@ router.post('/refresh', requireAuth, async (req, res) => {
   if (result.status === 'insufficient_data') {
     res.status(412).json({
       data: null,
-      error: "We're still getting to know you — a few more check-ins and patterns will start to surface.",
+      error: "Insights start after your seventh check-in. A few more days, and patterns will start to surface.",
     })
     return
   }
