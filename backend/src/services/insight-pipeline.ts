@@ -3,7 +3,7 @@ import { runRuleEngine } from './rule-engine/index'
 import { FALLBACK_COPY } from './rule-engine/fallback-copy'
 import { synthesizeInsights } from './gemini/synthesize'
 import { validateTone } from './gemini/validate'
-import { GeminiUnavailable, GeminiTimeout, GeminiSchemaError } from './gemini/errors'
+import { GeminiUnavailable, GeminiTimeout, GeminiSchemaError, GeminiExhausted } from './gemini/errors'
 import { predictPatterns } from './ml-client/client'
 import { patternToCopy } from './ml-client/translate'
 import type { CheckInPayload } from './ml-client/schema'
@@ -130,8 +130,12 @@ export async function runInsightPipeline(userId: string): Promise<PipelineResult
       err instanceof GeminiUnavailable ||
       err instanceof GeminiTimeout ||
       err instanceof GeminiSchemaError ||
+      err instanceof GeminiExhausted ||
       err instanceof Error
     ) {
+      // The fallback copy hides this from the user, so the log is the only place an outage (a
+      // retired model, a bad key) shows up. The message carries model + status, never the key.
+      console.warn('[insights] Gemini unavailable, using fallback copy:', err instanceof Error ? err.message : err)
       // Fall back to rule-engine copy for top N flags (max 4)
       insightDrafts = ruleResult.flags.slice(0, 4).map((flag: Flag) => ({
         ...FALLBACK_COPY[flag.id],
