@@ -9,7 +9,7 @@ that helps you notice the quiet, hard-to-name things (low energy, brain fog, moo
 and surfaces honest, non-clinical patterns in your own data, without ever diagnosing or prescribing.
 
 > 🚧 **Status: in active development.** This is a solo portfolio project, built in public phases.
-> Phase 4 of 7 is complete — see [Progress](#progress) below for exactly what's live and what isn't yet.
+> Phases 0–6 are complete; Phase 7 (polish and hardening) is next — see [Progress](#progress) below.
 
 ---
 
@@ -37,13 +37,17 @@ first request after a while can take 30–50 seconds to wake up.
 - **A personal pattern model** (scikit-learn, trained per-user, stateless) that learns *your* data after
   14+ check-ins and surfaces an honest next-day mood/energy prediction — banded into plain language
   ("steadier," "brighter") rather than raw numbers, and hidden entirely when the model isn't confident.
-- Coming next: a fully client-side **encrypted journal** the app itself can never read, and a
-  **cycle-aware wellness section**.
+- **A private journal** encrypted in your browser before it's saved, so the server only ever holds
+  ciphertext. Many pages a day, a mood per page, on-device-only dictation, and the last version of
+  an edited page kept (still encrypted). Edits scribble the old words out; deleting crumples the page.
+- **A cycle-aware wellness section** — a cycle wheel, what each phase often feels like, a gentle
+  symptom log, 13 sourced myths vs facts, and cycle phases drawn behind the dashboard mood graph.
+- **Email or Google sign-in**, then a paper-page onboarding that shapes the first insights.
 
 ### What it deliberately doesn't do
 
 No diagnoses. No medical claims. No supplement or affiliate pushing. No dark patterns. The journal
-(once built) will never feed any AI/ML layer — that boundary is architectural, not a setting.
+never feeds any AI/ML layer, and neither does cycle data — that boundary is architectural, not a setting.
 
 ---
 
@@ -56,8 +60,8 @@ No diagnoses. No medical claims. No supplement or affiliate pushing. No dark pat
 | 2 | Daily check-in + dashboard | ✅ Done |
 | 3 | Rule engine + Gemini insights | ✅ Done |
 | 4 | Personal ML pattern model | ✅ Done |
-| 5 | Encrypted journal | ⬜ Not started |
-| 6 | Cycle-aware wellness section | ⬜ Not started |
+| 5 | Encrypted journal | ✅ Done |
+| 6 | Cycle-aware wellness section | ✅ Done |
 | 7 | Polish, accessibility, docs, deploy hardening | ⬜ Not started |
 
 An emotion-classification layer (reading tone from check-in notes) is intentionally deferred to
@@ -81,8 +85,12 @@ Next.js (Vercel)  →  Express + TypeScript API (Render)  →  Supabase Postgres
   history with each call and the service trains a small gradient-boosted model in memory, in
   milliseconds. `GET /api/patterns` is decoupled from the main dashboard load, so a cold ML service
   never blocks the rest of the app.
-- **Journal encryption (Phase 5) will happen entirely in the browser** via the Web Crypto API. The
-  server will only ever store ciphertext.
+- **Journal encryption happens entirely in the browser** (Web Crypto: PBKDF2 → AES-GCM 256). The key
+  comes from your password (or a journal passphrase for Google-only accounts), never leaves the
+  browser, and the server stores only ciphertext — it can't read a page even with full DB access.
+- **Gemini models are configuration, not code.** The backend tries a chain of Flash models and falls
+  back to pre-written copy if none answer, logging why.
+- **Tests:** 122 backend (Vitest) + 60 ML service (pytest), plus browser end-to-end checks.
 
 ---
 
@@ -90,7 +98,7 @@ Next.js (Vercel)  →  Express + TypeScript API (Render)  →  Supabase Postgres
 
 | Layer | Tech |
 |---|---|
-| Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS 4, Framer Motion, custom hand-drawn UI kit |
+| Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS 4, Framer Motion, GSAP, Lenis, Tiptap, custom hand-drawn UI kit |
 | Backend | Express 5, TypeScript, Prisma, Zod |
 | ML service | Python 3.12, FastAPI, scikit-learn, pandas, numpy, scipy |
 | Auth & DB | Supabase (Postgres + Auth) |
@@ -114,15 +122,20 @@ Each service is independently deployable and has its own `package.json` / depend
 
 ## Running it locally
 
-Requires Node 20+, Python 3.12, and a Supabase project.
+Requires Node 20+, Python 3.12+ (Render runs 3.12; local dev uses 3.14), and a Supabase project.
 
 ```bash
 npm install               # installs all workspaces
+py -3.14 -m pip install -r ml-service/requirements.txt
 
 # each service needs its own .env — see the corresponding .env.example
 npm run dev                # frontend (:3000) + backend (:4000)
-npm run dev:ml              # ml-service (:8000), separate terminal
+npm run dev:ml             # ml-service (:8000), separate terminal
 ```
+
+`dev:ml` uses the Windows `py` launcher to pick Python 3.14 explicitly. On macOS/Linux, run
+`cd ml-service && python3 -m uvicorn app.main:app --port 8000` instead. Without the ML service the
+dashboard's "Your patterns" card simply stays hidden.
 
 ---
 
