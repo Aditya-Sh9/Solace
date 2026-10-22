@@ -33,7 +33,7 @@ export interface CycleToday {
   daysUntilNext: number   // days until the next phase begins (1 = tomorrow)
   nextPhase:     CyclePhaseId
   // True once more than one cycle has passed since the logged start: the day is projected
-  // forward from an older anchor, so the UI invites "it started today".
+  // forward from an older anchor, so the UI invites "My period started today".
   projected:     boolean
 }
 
@@ -93,7 +93,7 @@ export function cycleToday(settings: CycleSettings, today: string | Date): Cycle
   }
 }
 
-// "It started today": the observed gap nudges the average a third of the way, and only when it
+// "My period started today": the observed gap nudges the average a third of the way, and only when it
 // looks like a real cycle (21–45 days). A single odd month shouldn't rewrite someone's rhythm.
 export function learnCycleLength(previousStart: string | Date | null, newStart: string | Date, cycleLength: number): number {
   if (!previousStart) return cycleLength

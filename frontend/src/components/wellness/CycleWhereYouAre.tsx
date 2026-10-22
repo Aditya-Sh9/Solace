@@ -2,7 +2,7 @@
 
 // "Where you are" card from screens-wellness.jsx: the wheel plus the day stepper. The stepper
 // here *peeks* at other days (it never changes what's saved) and comes back to today. Additions
-// without a mock: days-until-next line (6.10), "it started today", the projected-day note, and
+// without a mock: days-until-next line (6.10), "My period started today", the projected-day note, and
 // the setup/edit form in place of the wheel (MISSING_REFERENCES.md).
 
 import { useState } from 'react'
@@ -21,10 +21,12 @@ interface CycleWhereYouAreProps {
   onStop:        () => Promise<string | null>
 }
 
+// The period is named plainly ("your next period", not "your menstrual days") — euphemisms
+// read as something that can't be talked about (user feedback, 2026-10-22).
 function untilCopy(days: number, next: PhaseId): string {
-  const name = PHASE_BY_ID[next].name.toLowerCase()
-  if (days <= 1) return `Your ${name} days are probably close — maybe tomorrow.`
-  return `About ${days} days until your ${name} days, give or take.`
+  const what = next === 'MENSTRUAL' ? 'your next period' : `your ${PHASE_BY_ID[next].name.toLowerCase()} days`
+  if (days <= 1) return `${what[0].toUpperCase()}${what.slice(1)} ${next === 'MENSTRUAL' ? 'is' : 'are'} probably close — maybe tomorrow.`
+  return `About ${days} days until ${what}, give or take.`
 }
 
 export default function CycleWhereYouAre({ overview, selected, onSelect, onSaveSettings, onStarted, onStop }: CycleWhereYouAreProps) {
@@ -50,7 +52,7 @@ export default function CycleWhereYouAre({ overview, selected, onSelect, onSaveS
     setIsBusy(true)
     const err = await onStarted()
     setIsBusy(false)
-    setNote(err ?? 'Noted — the wheel starts again from today.')
+    setNote(err ?? 'Noted — today is day 1 of a new cycle.')
     setPeekDay(null)
     onSelect(null)
   }
@@ -114,14 +116,14 @@ export default function CycleWhereYouAre({ overview, selected, onSelect, onSaveS
       ) : today && (
         <p className="cycle-where-line">
           {today.projected
-            ? 'Counting on from your last logged start — if it has arrived since, tell us below.'
+            ? 'Counting on from your last period — if a new one has started, tap below.'
             : untilCopy(today.daysUntilNext, today.nextPhase)}
         </p>
       )}
 
       <div className="cycle-where-actions">
         <InkButton size="sm" variant="ghost" icon={<Icon.Drop size={14} />} onClick={started} disabled={isBusy}>
-          {isBusy ? 'Noting…' : 'It started today'}
+          {isBusy ? 'Saving…' : 'My period started today'}
         </InkButton>
       </div>
       {note && <p role="status" className="cycle-where-note hand">{note}</p>}

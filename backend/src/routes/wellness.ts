@@ -98,7 +98,7 @@ router.put('/cycle', async (req, res) => {
   res.json({ data: { ok: true } })
 })
 
-// POST /api/wellness/cycle/started — "it started today": re-anchor and let the average learn a little.
+// POST /api/wellness/cycle/started — "My period started today": re-anchor and let the average learn a little.
 router.post('/cycle/started', async (req, res) => {
   const { userId } = req.user!
   const profile = await prisma.userProfile.findUnique({ where: { userId }, select: { lastPeriodStart: true, cycleLength: true, cycleTracking: true } })
