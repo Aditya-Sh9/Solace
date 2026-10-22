@@ -1113,7 +1113,8 @@ html.lenis body { height: auto; }
 
 /* Symptom history */
 .symptom-history-wrap { margin-top: 22px; padding-top: 20px; border-top: 1px dashed var(--ink-border); }
-.symptom-history-grid { display: grid; column-gap: 2px; row-gap: 6px; align-items: center; }
+.symptom-history-grid { display: grid; grid-template-columns: minmax(96px, 150px) repeat(35, minmax(0, 1fr)); column-gap: 2px; row-gap: 6px; align-items: center; }
+.weeks-short { display: none; }
 .symptom-history-phase { height: 6px; border-radius: 3px; background: var(--phase-tint, transparent); }
 .symptom-history-label { font-size: 12.5px; color: var(--ink-soft); padding-right: 8px; line-height: 1.2; min-width: 0; overflow-wrap: anywhere; }
 .symptom-history-mostly { display: block; font-size: 14px; color: var(--accent); }
@@ -1157,5 +1158,8 @@ html.lenis body { height: auto; }
   .myths-head-right { display: none; }
   .myth-pair { grid-template-columns: 1fr; gap: 8px; }
   .myth-pair + .myth-pair { margin-top: 10px; }
-  .symptom-history-date { font-size: 9px; }
+  .symptom-history-grid { grid-template-columns: minmax(84px, 120px) repeat(14, minmax(0, 1fr)); }
+  .symptom-history-grid [data-early] { display: none; }
+  .weeks-long { display: none; }
+  .weeks-short { display: inline; }
 }

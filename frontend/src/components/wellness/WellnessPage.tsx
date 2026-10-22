@@ -77,7 +77,9 @@ export default function WellnessPage() {
           <InkCard hand handIntensity={2.4} style={{ padding: 28 }}>
             <SymptomLogCard log={log} state={logState} onChange={wellness.updateLog} />
             <div className="symptom-history-wrap">
-              <div className="eyebrow" style={{ marginBottom: 10 }}>The last five weeks</div>
+              <div className="eyebrow" style={{ marginBottom: 10 }}>
+                The last <span className="weeks-long">five</span><span className="weeks-short">two</span> weeks
+              </div>
               <SymptomHistory today={overview.date} version={historyVersion} />
               {overview.settings && <CyclePatternNote showWaiting version={historyVersion} />}
             </div>

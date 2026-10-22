@@ -4,6 +4,7 @@
 // last five weeks — one row per symptom you've logged most, one column per day, dot size by how
 // strong it felt, columns tinted by phase. Each row notes which phase it most often fell in,
 // which is the pattern worth noticing. Independent fetch; refetches when today's log is kept.
+// Phones show the last two weeks (CSS hides the earlier columns — 35 dots don't fit 300px).
 
 import { useEffect, useMemo, useState } from 'react'
 import { InkButton } from '@/src/components/ui'
@@ -13,6 +14,7 @@ import type { SymptomLogEntry } from '@/src/types/wellness'
 
 const DAYS = 35
 const MAX_ROWS = 5
+const PHONE_DAYS = 14
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 function dayList(today: string): string[] {
@@ -98,17 +100,19 @@ export default function SymptomHistory({ today, version }: SymptomHistoryProps) 
         ))}
       </ul>
 
-      <div className="symptom-history-grid" aria-hidden style={{ gridTemplateColumns: `minmax(96px, 150px) repeat(${DAYS}, minmax(0, 1fr))` }}>
+      <div className="symptom-history-grid" aria-hidden>
         <span />
-        {days.map(d => (
-          <span key={d} className="symptom-history-phase" data-phase={byDate.get(d)?.phase ?? undefined} />
+        {days.map((d, i) => (
+          <span key={d} className="symptom-history-phase" data-phase={byDate.get(d)?.phase ?? undefined} data-early={i < DAYS - PHONE_DAYS || undefined} />
         ))}
         {rows.map(r => (
           <Row key={r.symptom} label={r.symptom} mostly={r.mostly} days={days} byDate={byDate} />
         ))}
         <span />
         {days.map((d, i) => (
-          <span key={`l-${d}`} className="symptom-history-date">{i % 7 === 0 || i === DAYS - 1 ? shortDate(d) : ''}</span>
+          <span key={`l-${d}`} className="symptom-history-date" data-early={i < DAYS - PHONE_DAYS || undefined}>
+            {(DAYS - 1 - i) % 7 === 0 ? shortDate(d) : ''}
+          </span>
         ))}
       </div>
 
@@ -128,11 +132,11 @@ function Row({ label, mostly, days, byDate }: { label: string; mostly: PhaseId |
         {label}
         {mostly && <span className="hand symptom-history-mostly">mostly {PHASE_BY_ID[mostly].name.toLowerCase()}</span>}
       </span>
-      {days.map(d => {
+      {days.map((d, i) => {
         const e = byDate.get(d)
         const isOn = !!e?.symptoms.includes(label)
         return (
-          <span key={d} className="symptom-history-cell">
+          <span key={d} className="symptom-history-cell" data-early={i < DAYS - PHONE_DAYS || undefined}>
             {isOn && <i data-strength={e?.intensity ?? 2} />}
           </span>
         )
