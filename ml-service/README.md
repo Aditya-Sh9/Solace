@@ -17,8 +17,11 @@ pip install -r requirements.txt
 ## Run (development)
 
 ```bash
-uvicorn app.main:app --reload
+py -3.14 -m uvicorn app.main:app --port 8000
 ```
+
+`py -3.14` asks the Windows launcher for 3.14 by name, so it works even when plain `python` is an
+older install. No `--reload`: on Windows it leaves a worker process holding port 8000 after you stop it.
 
 Or from the monorepo root:
 
