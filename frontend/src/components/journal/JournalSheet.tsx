@@ -2,12 +2,13 @@
 
 // The open page from screens-journal.jsx. Deviations: delete asks first (inline, warm copy),
 // and both animations play *after* the server confirms — the mock scribbles/tears first, but
-// a failed save must never look like it worked. "See what it said before" (last version) and
-// the dictation states have no mock (MISSING_REFERENCES.md). Padding narrows below 720px.
+// a failed save must never look like it worked. Delete crumples (PageCrumple, wrapped by
+// JournalPage) rather than tearing. "See what it said before" (last version) and the dictation
+// states have no mock (MISSING_REFERENCES.md). Padding narrows below 720px.
 
 import { useState, useCallback } from 'react'
 import type { Editor, JSONContent } from '@tiptap/core'
-import { InkCard, InkButton, Icon, MarginDoodle, PageTearOverlay } from '@/src/components/ui'
+import { InkCard, InkButton, Icon, MarginDoodle } from '@/src/components/ui'
 import JournalEditor from './JournalEditor'
 import JournalMoodPicker from './JournalMoodPicker'
 import JournalDictation from './JournalDictation'
@@ -33,7 +34,7 @@ interface JournalSheetProps {
   pageCount:     number
   isEditing:     boolean
   scribbleDoc:   JSONContent | null   // the words just replaced — scribbled out briefly
-  isTearing:     boolean
+  isCrumpling:   boolean
   listenOnOpen:  boolean
   onEdit:        () => void
   onListen:      () => void           // view mode mic tap → edit + listen
@@ -41,14 +42,13 @@ interface JournalSheetProps {
   onSave:        (doc: JSONContent) => Promise<string | null>
   onMood:        (mood: MoodIndex) => Promise<string | null>
   onRemove:      () => Promise<string | null>
-  onTearDone:    () => void
 }
 
 const DOODLES = ['star', 'leaf', 'dot', 'heart', 'sparkle', 'dot'] as const
 
 export default function JournalSheet({
-  page, pageNumber, pageCount, isEditing, scribbleDoc, isTearing, listenOnOpen,
-  onEdit, onListen, onCancel, onSave, onMood, onRemove, onTearDone,
+  page, pageNumber, pageCount, isEditing, scribbleDoc, isCrumpling, listenOnOpen,
+  onEdit, onListen, onCancel, onSave, onMood, onRemove,
 }: JournalSheetProps) {
   const [draft,        setDraft]        = useState<JSONContent>(page.doc)
   const [isBusy,       setIsBusy]       = useState(false)
@@ -57,7 +57,7 @@ export default function JournalSheet({
   const [error,        setError]        = useState<string | null>(null)
   const [editor,       setEditor]       = useState<Editor | null>(null)
 
-  const isLocked = isBusy || isTearing
+  const isLocked = isBusy || isCrumpling
 
   const run = async (action: () => Promise<string | null>) => {
     setIsBusy(true)
@@ -199,7 +199,6 @@ export default function JournalSheet({
         <p role="alert" style={{ margin: '12px 0 0', fontSize: 13, color: 'var(--ink-soft)', textAlign: 'right' }}>{error}</p>
       )}
 
-      {isTearing && <PageTearOverlay onDone={onTearDone} />}
     </InkCard>
   )
 }

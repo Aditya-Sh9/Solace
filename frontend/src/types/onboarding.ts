@@ -27,4 +27,5 @@ export interface InsightCard {
 export interface OnboardingStatus {
   onboarded:   boolean
   cycleAccess: boolean   // false hides the Wellness (cycle) section — rule lives in the backend
+  name:        string | null  // the name typed in onboarding
 }

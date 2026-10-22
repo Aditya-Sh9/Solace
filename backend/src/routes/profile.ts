@@ -18,12 +18,21 @@ const patchSchema = z.object({
 
 // Always 200 so the client can tell "hasn't onboarded yet" apart from a failed request —
 // GET / returns 404 when the public.users row is missing, which looks like an error to apiFetch.
+// Also carries the name typed in onboarding, so the app greets people by the name they chose
+// rather than their account metadata or email prefix.
 router.get('/status', requireAuth, async (req, res) => {
-  const profile = await prisma.userProfile.findUnique({
-    where:  { userId: req.user!.userId },
-    select: { gender: true },
+  const user = await prisma.user.findUnique({
+    where:  { id: req.user!.userId },
+    select: { name: true, profile: { select: { gender: true } } },
   })
-  res.json({ data: { onboarded: profile !== null, cycleAccess: hasCycleAccess(profile?.gender) } })
+  const profile = user?.profile ?? null
+  res.json({
+    data: {
+      onboarded:   profile !== null,
+      cycleAccess: hasCycleAccess(profile?.gender),
+      name:        user?.name ?? null,
+    },
+  })
 })
 
 router.get('/', requireAuth, async (req, res) => {

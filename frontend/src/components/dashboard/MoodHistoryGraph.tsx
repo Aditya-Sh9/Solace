@@ -112,13 +112,18 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
   const energyData = points.map(p => p.energyScore - 1)
   const isAggregated = points.length !== ascending.length
 
-  // Cap displayed labels at ~8 even for longer, aggregated ranges so they never overlap.
+  // At most ~8 labels, each placed under its own point. The last day is always
+  // labelled, so a regular label that would crowd it is dropped (they used to
+  // collide as "Oct 20 Oct 21"). Every other label is "minor" and hides on phones.
   const labelEvery = Math.max(1, Math.ceil(points.length / 8))
-  const dateLabels = points.map((p, i) => {
-    if (points.length > 8 && i % labelEvery !== 0 && i !== points.length - 1) return ''
+  const lastIdx    = points.length - 1
+  const dateLabels = points.flatMap((p, i) => {
+    const isRegular = i % labelEvery === 0 && lastIdx - i >= Math.max(1, labelEvery * 0.6)
+    if (i !== lastIdx && !isRegular) return []
     const d = new Date(p.date)
-    return `${MONTHS[d.getMonth()]} ${d.getDate()}`
+    return [{ i, text: `${MONTHS[d.getMonth()]} ${d.getDate()}`, isMinor: i !== lastIdx && (i / labelEvery) % 2 === 1 }]
   })
+  const labelLeft = (i: number) => (points.length === 1 ? 50 : (i / lastIdx) * 100)
 
   if (history.length === 0) {
     return (
@@ -175,17 +180,24 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
       </div>
 
       {/* Graph in hand-drawn card */}
-      <InkCard hand handIntensity={1.8} style={{ padding: '60px 24px 18px', overflow: 'visible', opacity: loadingRange ? 0.6 : 1, transition: 'opacity 320ms ease' }}>
+      <InkCard hand handIntensity={1.8} style={{ padding: '28px 24px 18px', overflow: 'visible', opacity: loadingRange ? 0.6 : 1, transition: 'opacity 320ms ease' }}>
         <div style={{ overflow: 'visible' }}>
           <MoodGraph data={moodData} energy={energyData} height={260} wobble={0.18} drawOnMount />
         </div>
-        {/* X-axis date labels */}
-        <div style={{
-          display: 'flex', justifyContent: points.length === 1 ? 'center' : 'space-between', marginTop: 28,
-          padding: '0 28px', color: 'var(--ink-muted)', fontSize: 11, letterSpacing: '0.08em',
-        }}>
-          {dateLabels.map((d, i) => (
-            <span key={i}>{d}</span>
+        {/* X-axis date labels, each centred under its point (the svg's padX is 28) */}
+        <div className="mood-axis" style={{ position: 'relative', height: 16, margin: '22px 28px 0' }}>
+          {dateLabels.map(l => (
+            <span
+              key={l.i}
+              data-minor={l.isMinor || undefined}
+              style={{
+                position: 'absolute', left: `${labelLeft(l.i)}%`, top: 0,
+                transform: 'translateX(-50%)', whiteSpace: 'nowrap',
+                color: 'var(--ink-muted)', fontSize: 11, letterSpacing: '0.08em',
+              }}
+            >
+              {l.text}
+            </span>
           ))}
         </div>
       </InkCard>

@@ -23,7 +23,7 @@ export { default as IllustratedSlider } from './IllustratedSlider';
 export type { IllustratedSliderProps } from './IllustratedSlider';
 
 export { default as InkCircleSelection } from './InkCircleSelection';
-export { default as PageTearOverlay } from './PageTearOverlay';
+export { default as PageCrumple } from './PageCrumple';
 export { default as ScribbleOut } from './ScribbleOut';
 
 export { default as InkInput } from './InkInput';

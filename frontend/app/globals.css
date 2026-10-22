@@ -569,6 +569,8 @@ html.lenis body { height: auto; }
 /* Grid items default to min-width:auto, so the mood graph's SVG could force its
    card wider than a phone screen. Let items shrink to the column. */
 .dashboard-grid > * { min-width: 0; }
+/* Mood graph x-axis: every other date hides on phones so labels never touch */
+@media (max-width: 520px) { .mood-axis [data-minor] { display: none; } }
 
 .stat-card {
   padding: 18px 20px;
@@ -810,6 +812,59 @@ html.lenis body { height: auto; }
   position: absolute; inset: 0; display: grid; place-items: center;
   pointer-events: none; z-index: 10;
   animation: ink-fade-in 480ms ease both;
+}
+
+/* Journal: crumple (delete). The page squeezes into a jagged blob (clip-path polygons
+   share 16 points so they interpolate), creases fade in, then a paper ball is tossed. */
+.page-crumple { position: relative; }
+.page-crumple[data-active] .page-crumple-sheet {
+  animation-name: page-crumple-squeeze;
+  animation-timing-function: cubic-bezier(.55,.05,.75,.45);
+  animation-fill-mode: forwards;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+.page-crumple-creases {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6;
+  animation: page-crumple-creases 360ms ease-in forwards;
+}
+.page-crumple-ball {
+  position: absolute; left: 50%; top: 50%; z-index: 7; pointer-events: none;
+  opacity: 0; transform: translate(-50%, -50%) scale(0.6);
+  animation-name: page-crumple-toss;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.page-crumple-ball svg { display: block; filter: drop-shadow(0 10px 12px rgba(0,0,0,0.18)); }
+@keyframes page-crumple-squeeze {
+  0% {
+    clip-path: polygon(0% 0%, 25% 0%, 50% 0%, 75% 0%, 100% 0%, 100% 25%, 100% 50%, 100% 75%, 100% 100%, 75% 100%, 50% 100%, 25% 100%, 0% 100%, 0% 75%, 0% 50%, 0% 25%);
+    transform: none; opacity: 1;
+  }
+  35% {
+    clip-path: polygon(4% 6%, 26% 3%, 49% 8%, 73% 2%, 96% 7%, 92% 27%, 97% 50%, 91% 74%, 95% 94%, 74% 97%, 52% 91%, 27% 98%, 6% 93%, 9% 73%, 3% 49%, 8% 26%);
+    transform: scale(0.94) rotate(-1deg); opacity: 1;
+  }
+  88% {
+    clip-path: polygon(40% 36%, 47% 33%, 52% 35%, 58% 33%, 63% 38%, 64% 45%, 66% 51%, 63% 58%, 60% 64%, 53% 66%, 48% 63%, 42% 66%, 37% 60%, 35% 53%, 37% 47%, 35% 41%);
+    transform: scale(0.55) rotate(6deg); opacity: 1;
+  }
+  100% {
+    clip-path: polygon(40% 36%, 47% 33%, 52% 35%, 58% 33%, 63% 38%, 64% 45%, 66% 51%, 63% 58%, 60% 64%, 53% 66%, 48% 63%, 42% 66%, 37% 60%, 35% 53%, 37% 47%, 35% 41%);
+    transform: scale(0.5) rotate(7deg); opacity: 0;
+  }
+}
+@keyframes page-crumple-creases { from { opacity: 0; } to { opacity: 1; } }
+/* Pops into place where the page vanished, hops up, then drops off the page. */
+@keyframes page-crumple-toss {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.7) rotate(0deg); animation-timing-function: cubic-bezier(.34,1.4,.64,1); }
+  12%  { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(10deg); animation-timing-function: cubic-bezier(.2,.6,.4,1); }
+  38%  { opacity: 1; transform: translate(calc(-50% + 34px), calc(-50% - 64px)) scale(1) rotate(120deg); animation-timing-function: cubic-bezier(.5,0,.9,.5); }
+  70%  { opacity: 1; transform: translate(calc(-50% + 58px), calc(-50% + 150px)) scale(0.96) rotate(250deg); }
+  100% { opacity: 0; transform: translate(calc(-50% + 72px), calc(-50% + 300px)) scale(0.92) rotate(330deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-crumple[data-active] .page-crumple-sheet, .page-crumple-ball, .page-crumple-creases { animation: none; }
 }
 
 /* Scribbled-out old words (edit animation + "see what it said before"). */

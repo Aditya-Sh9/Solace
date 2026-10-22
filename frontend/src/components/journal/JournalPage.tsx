@@ -2,14 +2,14 @@
 
 // Journal orchestrator — built to screens-journal.jsx. Any number of pages per day: "new"
 // always starts a fresh unsaved page, created on first save. Edits scribble out the old
-// words (720ms) and keep them as the page's previous version; deletes tear the page away
-// (900ms). Both play only after the server confirms. Deviations from the reference (inline
-// delete confirm, unlock/passphrase card, mobile layout) are noted in the child components
-// and MISSING_REFERENCES.md.
+// words (720ms) and keep them as the page's previous version; deletes crumple the page into
+// a ball and toss it (~1.2s, user request 2026-10-22 — the mock tears). Both play only after
+// the server confirms. Deviations from the reference (inline delete confirm, unlock/passphrase
+// card, mobile layout) are noted in the child components and MISSING_REFERENCES.md.
 
 import { useRef, useState, useMemo } from 'react'
 import type { JSONContent } from '@tiptap/core'
-import { InkCard } from '@/src/components/ui'
+import { InkCard, PageCrumple } from '@/src/components/ui'
 import DashboardError from '@/src/components/dashboard/DashboardError'
 import { useJournal, type JournalPage as JournalPageData } from '@/src/hooks/use-journal'
 import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
@@ -43,7 +43,7 @@ export default function JournalPage() {
   const [isEditing,   setIsEditing]   = useState(false)
   const [showRemoved, setShowRemoved] = useState(false)
   const [scribble,    setScribble]    = useState<{ id: string; doc: JSONContent } | null>(null)
-  const [tearingId,   setTearingId]   = useState<string | null>(null)
+  const [crumplingId, setCrumplingId] = useState<string | null>(null)
   const [listenOnOpen, setListenOnOpen] = useState(false)
 
   useInkEntrance(scopeRef, status === 'ready')
@@ -63,7 +63,7 @@ export default function JournalPage() {
   }, [pages, draftNew])
 
   const openPage = (key: string) => {
-    if (key === resolvedKey || tearingId) return
+    if (key === resolvedKey || crumplingId) return
     if (key !== NEW_KEY) setDraftNew(null)
     setActiveKey(key)
     setIsEditing(false)
@@ -127,20 +127,20 @@ export default function JournalPage() {
 
   const finishRemoval = (id: string) => {
     journal.dropPage(id)
-    setTearingId(null)
+    setCrumplingId(null)
     setActiveKey(pages.find(p => p.id !== id)?.id ?? null)
     setIsEditing(false)
     setShowRemoved(true)
     window.setTimeout(() => setShowRemoved(false), REMOVED_MS)
   }
 
-  // Server first, then the tear — a page that failed to delete never looks torn out.
+  // Server first, then the crumple — a page that failed to delete never looks thrown away.
   const removePage = async () => {
     if (!activePage?.id) return null
     const id = activePage.id
     const error = await journal.remove(id)
     if (error) return error
-    if (isMotionOk()) setTearingId(id)
+    if (isMotionOk()) setCrumplingId(id)
     else finishRemoval(id)
     return null
   }
@@ -159,6 +159,7 @@ export default function JournalPage() {
     )
   }
 
+  const isCrumpling = !!crumplingId && crumplingId === activePage?.id
   const pageNumber = activePage ? spineItems.findIndex(i => i.key === resolvedKey) + 1 : 0
 
   return (
@@ -176,23 +177,24 @@ export default function JournalPage() {
 
       <div data-enter style={{ position: 'relative', minWidth: 0 }}>
         {activePage ? (
-          <JournalSheet
-            key={`${resolvedKey}-${isEditing ? 'edit' : 'view'}`}
-            page={activePage}
-            pageNumber={pageNumber}
-            pageCount={spineItems.length}
-            isEditing={isEditing}
-            scribbleDoc={scribble && scribble.id === activePage.id ? scribble.doc : null}
-            isTearing={!!tearingId && tearingId === activePage.id}
-            listenOnOpen={listenOnOpen}
-            onEdit={() => startEdit(false)}
-            onListen={() => startEdit(true)}
-            onCancel={cancelEdit}
-            onSave={saveDoc}
-            onMood={saveMood}
-            onRemove={removePage}
-            onTearDone={() => { if (tearingId) finishRemoval(tearingId) }}
-          />
+          <PageCrumple active={isCrumpling} onDone={() => { if (crumplingId) finishRemoval(crumplingId) }}>
+            <JournalSheet
+              key={`${resolvedKey}-${isEditing ? 'edit' : 'view'}`}
+              page={activePage}
+              pageNumber={pageNumber}
+              pageCount={spineItems.length}
+              isEditing={isEditing}
+              scribbleDoc={scribble && scribble.id === activePage.id ? scribble.doc : null}
+              isCrumpling={isCrumpling}
+              listenOnOpen={listenOnOpen}
+              onEdit={() => startEdit(false)}
+              onListen={() => startEdit(true)}
+              onCancel={cancelEdit}
+              onSave={saveDoc}
+              onMood={saveMood}
+              onRemove={removePage}
+            />
+          </PageCrumple>
         ) : (
           <JournalEmpty onNew={startNew} />
         )}
@@ -201,7 +203,7 @@ export default function JournalPage() {
           <div role="status" className="journal-removed-note">
             <InkCard variant="note" tilt={-2} style={{ padding: '16px 22px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <path d="M4 6 8 4 12 6 16 4 20 6 V 18 L 16 16 L 12 18 L 8 16 L 4 18 Z" strokeLinejoin="round" />
+                <path d="M12 3 L16 5 L20 8 L21 13 L19 18 L14 21 L9 20 L4 17 L3 11 L6 6 Z M8 9 L12 12 L10 16 M12 12 L17 10 M12 12 L15 17" strokeLinejoin="round" strokeLinecap="round" />
               </svg>
               <span className="hand" style={{ fontSize: 18 }}>Page removed.</span>
             </InkCard>

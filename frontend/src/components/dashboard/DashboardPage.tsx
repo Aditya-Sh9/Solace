@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/src/hooks/use-auth'
 import { useInkEntrance } from '@/src/hooks/use-ink-entrance'
+import { useDisplayName } from '@/src/hooks/use-cycle-access'
 import { getDashboard } from '@/src/lib/api/checkin'
 import type { DashboardData } from '@/src/types/checkin'
 
@@ -41,7 +42,7 @@ export default function DashboardPage() {
     fetchData()
   }, [fetchData, authLoading])
 
-  const name = user?.user_metadata?.name ?? user?.email?.split('@')[0] ?? 'there'
+  const name = useDisplayName(user) || 'there'
 
   const gridRef = useRef<HTMLDivElement>(null)
   useInkEntrance(gridRef, !loading && !error && data !== null)

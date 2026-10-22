@@ -52,9 +52,12 @@ interface MoodGraphProps {
   height?: number;
   wobble?: number;
   drawOnMount?: boolean; // ink-draw the mood line whenever its data changes
+  // Decorative graphs (landing hero) may swing past their box; data graphs keep
+  // every point and curve inside the plot so steep drops never cross the frame.
+  bleed?: boolean;
 }
 
-export default function MoodGraph({ data, energy, width: initialWidth = 600, height = 240, wobble = 0.2, drawOnMount = false }: MoodGraphProps) {
+export default function MoodGraph({ data, energy, width: initialWidth = 600, height = 240, wobble = 0.2, drawOnMount = false, bleed = false }: MoodGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Lay out in real pixels so dots stay round. With a fixed viewBox and
@@ -74,8 +77,9 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
   }, []);
 
   const padX = 28;
-  const padTop = 18;
-  const padBottom = 18;
+  // Contained graphs keep room for the last point's 15px wash ring.
+  const padTop = bleed ? 18 : 20;
+  const padBottom = bleed ? 18 : 20;
   const innerW = width - padX * 2;
   const innerH = height - padTop - padBottom;
   const N = data.length;
@@ -83,12 +87,14 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
   const step = innerW / Math.max(N - 1, 1);
   // A lone first check-in sits in the middle, not pinned to the left edge
   const xAt = (i: number) => (isSingle ? width / 2 : padX + i * step);
-  const amp = 1.7;
+  const amp = bleed ? 1.7 : 1;
   const baseline = padTop + innerH * 0.5;
+  // 0–5 spans exactly the plot height when contained.
+  const yAt = (v: number) => baseline - ((v / 5) - 0.5) * innerH * amp;
 
   const pts = useMemo(() => data.map((v, i) => ({
     x: xAt(i),
-    y: baseline - ((v / 5) - 0.5) * innerH * amp,
+    y: yAt(v),
     v,
   })), [data, width, height]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -105,9 +111,14 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
       const p2 = pointSet[i + 1];
       const p3 = pointSet[Math.min(pointSet.length - 1, i + 2)];
       const cp1x = p1.x + (p2.x - p0.x) * tension / 2 + j(5 * wobble);
-      const cp1y = p1.y + (p2.y - p0.y) * tension / 2 + j(3 * wobble);
+      // Control points stay between the two ends' heights, so a steep drop can't
+      // bulge past its own points (and out of the frame).
+      const lo = Math.min(p1.y, p2.y);
+      const hi = Math.max(p1.y, p2.y);
+      const clampY = (y: number) => (bleed ? y : Math.min(hi, Math.max(lo, y)));
+      const cp1y = clampY(p1.y + (p2.y - p0.y) * tension / 2) + j(3 * wobble);
       const cp2x = p2.x - (p3.x - p1.x) * tension / 2 + j(5 * wobble);
-      const cp2y = p2.y - (p3.y - p1.y) * tension / 2 + j(3 * wobble);
+      const cp2y = clampY(p2.y - (p3.y - p1.y) * tension / 2) + j(3 * wobble);
       const ex   = p2.x + j(5 * wobble);
       const ey   = p2.y + j(3 * wobble);
       d += ` C ${f(cp1x)} ${f(cp1y)}, ${f(cp2x)} ${f(cp2y)}, ${f(ex)} ${f(ey)}`;
@@ -119,7 +130,7 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
 
   const energyPts = useMemo(() => (energy ?? []).map((v, i) => ({
     x: xAt(i),
-    y: baseline - ((v / 5) - 0.5) * innerH * amp,
+    y: yAt(v),
   })), [energy, width, height]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const energyPath = useMemo(
@@ -184,7 +195,7 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
         </filter>
       </defs>
       {refs.map((r, i) => {
-        const y = baseline - ((r / 5) - 0.5) * innerH * amp;
+        const y = yAt(r);
         return (
           <line key={i} x1={padX} x2={width - padX} y1={y} y2={y}
             stroke="var(--ink-faint)" strokeWidth="0.7" strokeDasharray="3 5" opacity="0.55" />
