@@ -45,6 +45,10 @@ model UserProfile {
   // Null for anyone who onboarded before this was asked.
   gender          Gender?
   cycleTracking          Boolean   @default(false) @map("cycle_tracking")
+  // Cycle anchor + averages for phase detection (services/cycle-phase.ts). Null start = not set up.
+  lastPeriodStart        DateTime? @map("last_period_start") @db.Date
+  cycleLength            Int       @default(28) @map("cycle_length")
+  periodLength           Int       @default(5) @map("period_length")
   lastInsightRefreshAt   DateTime? @map("last_insight_refresh_at")
   createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt              DateTime  @updatedAt @map("updated_at")
@@ -71,6 +75,7 @@ model CheckIn {
   notes            String?
   symptoms         String[]  // free-text tags from symptom chips
   foodGroups       String[]  @map("food_groups")     // food groups eaten today (multi-select chips)
+  cyclePhase       CyclePhase? @map("cycle_phase")   // set at save for people who track their cycle
   deletedAt        DateTime? @map("deleted_at")       // soft delete
   createdAt        DateTime  @default(now()) @map("created_at")
 
@@ -137,6 +142,9 @@ model CycleEntry {
   phase       CyclePhase?
   flowLevel   FlowLevel?  @map("flow_level")
   notes       String?
+  symptoms    String[]    // the day's gentle log (wellness chips)
+  intensity   Int?        // 1–3: a little / noticeable / a lot
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at")
   createdAt   DateTime    @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

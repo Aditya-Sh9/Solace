@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireAuth } from '../middleware/auth'
 import { prisma } from '../services/prisma'
 import { getTodayUTC, calculateStreak } from '../services/checkin-service'
+import { phaseForUserOn } from '../services/cycle-service'
 
 const router = Router()
 
@@ -38,6 +39,9 @@ router.post('/', requireAuth, async (req, res) => {
     create: { id: userId, email },
   })
 
+  // Stamped at save, so the phase reflects what the person knew about their cycle that day.
+  const cyclePhase = await phaseForUserOn(userId, today)
+
   const checkIn = await prisma.checkIn.upsert({
     where:  { userId_date: { userId, date: today } },
     update: {
@@ -50,6 +54,7 @@ router.post('/', requireAuth, async (req, res) => {
       symptoms:        data.symptoms,
       foodGroups:      data.foodGroups,
       notes:           data.notes ?? null,
+      cyclePhase,
     },
     create: {
       userId,
@@ -63,6 +68,7 @@ router.post('/', requireAuth, async (req, res) => {
       symptoms:        data.symptoms,
       foodGroups:      data.foodGroups,
       notes:           data.notes ?? null,
+      cyclePhase,
     },
   })
 

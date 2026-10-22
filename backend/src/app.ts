@@ -9,6 +9,7 @@ import dashboardRouter  from './routes/dashboard'
 import insightsRouter   from './routes/insights'
 import patternsRouter   from './routes/patterns'
 import journalRouter    from './routes/journal'
+import wellnessRouter   from './routes/wellness'
 
 const app = express()
 
@@ -53,6 +54,15 @@ const journalLimiter = rateLimit({
   message: { data: null, error: 'Too many requests — please try again later.' },
 })
 
+// Wellness: the gentle log saves as chips are tapped (debounced client-side).
+const wellnessLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 120,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { data: null, error: 'Too many requests — please try again later.' },
+})
+
 // 5 insight requests per hour per IP (per-user 6h gate enforced in pipeline)
 const insightLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -73,6 +83,7 @@ app.use('/api/dashboard',  dashboardRouter)
 app.use('/api/insights',   insightLimiter, insightsRouter)
 app.use('/api/patterns',  patternsRouter)
 app.use('/api/journal',   journalLimiter, journalRouter)
+app.use('/api/wellness',  wellnessLimiter, wellnessRouter)
 
 // Central error handler — catches all unhandled async errors thrown by routes
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

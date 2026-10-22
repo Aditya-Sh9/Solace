@@ -1,11 +1,13 @@
 'use client';
 
-import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
+import type { AriaAttributes, CSSProperties, MouseEventHandler, ReactNode } from 'react';
 
 export type ButtonVariant = 'default' | 'primary' | 'ghost';
 export type ButtonSize = 'md' | 'sm';
 
-export interface InkButtonProps {
+// Extends AriaAttributes because TypeScript never checks hyphenated JSX props: without this,
+// aria-label / aria-expanded passed to InkButton were silently dropped.
+export interface InkButtonProps extends AriaAttributes {
   children?: ReactNode;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   variant?: ButtonVariant;
@@ -29,6 +31,7 @@ export default function InkButton({
   className = '',
   style,
   type = 'button',
+  ...aria
 }: InkButtonProps) {
   const cls = [
     'ink-btn',
@@ -39,7 +42,7 @@ export default function InkButton({
   ].filter(Boolean).join(' ');
 
   return (
-    <button className={cls} onClick={onClick} disabled={disabled} style={style} type={type}>
+    <button {...aria} className={cls} onClick={onClick} disabled={disabled} style={style} type={type}>
       {icon}
       <span>{children}</span>
       {iconRight}

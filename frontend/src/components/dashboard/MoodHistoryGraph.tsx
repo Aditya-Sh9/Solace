@@ -15,6 +15,9 @@ import Chip from '@/src/components/ui/Chip'
 import MoodGraph from '@/src/components/ui/MoodGraph'
 import { HandDrawnUnderline } from '@/src/components/ui/Illustrations'
 import { getCheckinHistory } from '@/src/lib/api/checkin'
+import { useCycleAccess } from '@/src/hooks/use-cycle-access'
+import CyclePatternNote from '@/src/components/wellness/CyclePatternNote'
+import { PHASES } from '@/src/lib/wellness/phases'
 import type { CheckInRecord } from '@/src/types/checkin'
 
 interface MoodHistoryGraphProps {
@@ -25,6 +28,7 @@ interface GraphPoint {
   date:        string
   moodScore:   number
   energyScore: number
+  cyclePhase?: string | null   // daily points only; averaged buckets have none
 }
 
 const RANGES = [
@@ -70,7 +74,7 @@ function aggregate(records: CheckInRecord[], keyFn: (d: Date) => string): GraphP
 
 function toGraphPoints(ascending: CheckInRecord[], rangeId: RangeId): GraphPoint[] {
   if (ascending.length <= 45 || rangeId === 'week' || rangeId === 'month') {
-    return ascending.map(r => ({ date: r.date, moodScore: r.moodScore, energyScore: r.energyScore }))
+    return ascending.map(r => ({ date: r.date, moodScore: r.moodScore, energyScore: r.energyScore, cyclePhase: r.cyclePhase ?? null }))
   }
   if (rangeId === '3months') {
     return aggregate(ascending, d => String(Math.floor(daysSinceEpoch(d) / 7)))
@@ -111,6 +115,11 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
   const moodData   = points.map(p => p.moodScore - 1)
   const energyData = points.map(p => p.energyScore - 1)
   const isAggregated = points.length !== ascending.length
+  // Cycle bands (6.25) for people who track: daily points only — a weekly average spans phases.
+  const cycleAccess = useCycleAccess()
+  const bands = cycleAccess === true && !isAggregated && points.some(p => p.cyclePhase)
+    ? points.map(p => p.cyclePhase ?? null)
+    : undefined
 
   // At most ~8 labels, each placed under its own point. The last day is always
   // labelled, so a regular label that would crowd it is dropped (they used to
@@ -182,7 +191,7 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
       {/* Graph in hand-drawn card */}
       <InkCard hand handIntensity={1.8} style={{ padding: '28px 24px 18px', overflow: 'visible', opacity: loadingRange ? 0.6 : 1, transition: 'opacity 320ms ease' }}>
         <div style={{ overflow: 'visible' }}>
-          <MoodGraph data={moodData} energy={energyData} height={260} wobble={0.18} drawOnMount />
+          <MoodGraph data={moodData} energy={energyData} height={260} wobble={0.18} drawOnMount bands={bands} />
         </div>
         {/* X-axis date labels, each centred under its point (the svg's padX is 28) */}
         <div className="mood-axis" style={{ position: 'relative', height: 16, margin: '22px 28px 0' }}>
@@ -201,6 +210,13 @@ export default function MoodHistoryGraph({ history }: MoodHistoryGraphProps) {
           ))}
         </div>
       </InkCard>
+
+      {bands && (
+        <div className="phase-legend mood-phase-legend" aria-label="Background shading shows your cycle phase">
+          {PHASES.map(p => <span key={p.id}><i data-phase={p.id} aria-hidden />{p.name.toLowerCase()}</span>)}
+        </div>
+      )}
+      {cycleAccess === true && <CyclePatternNote />}
 
       {/* Compact, collapsible explainer — never a raw "scoring" description */}
       <div style={{ marginTop: 12, padding: '0 4px' }}>

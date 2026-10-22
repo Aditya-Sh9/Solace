@@ -55,9 +55,11 @@ interface MoodGraphProps {
   // Decorative graphs (landing hero) may swing past their box; data graphs keep
   // every point and curve inside the plot so steep drops never cross the frame.
   bleed?: boolean;
+  // Optional cycle phase per point (dashboard, 6.25): soft background bands behind the lines.
+  bands?: (string | null)[];
 }
 
-export default function MoodGraph({ data, energy, width: initialWidth = 600, height = 240, wobble = 0.2, drawOnMount = false, bleed = false }: MoodGraphProps) {
+export default function MoodGraph({ data, energy, width: initialWidth = 600, height = 240, wobble = 0.2, drawOnMount = false, bleed = false, bands }: MoodGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Lay out in real pixels so dots stay round. With a fixed viewBox and
@@ -140,6 +142,23 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
 
   const refs = [1, 2.5, 4];
 
+  // Consecutive points in the same phase share one band, half a step either side of them.
+  const bandRuns = useMemo(() => {
+    if (!bands || isSingle) return [];
+    const runs: { phase: string; from: number; to: number }[] = [];
+    bands.forEach((phase, i) => {
+      if (!phase) return;
+      const last = runs[runs.length - 1];
+      if (last && last.phase === phase && last.to === i - 1) last.to = i;
+      else runs.push({ phase, from: i, to: i });
+    });
+    return runs.map(r => {
+      const x1 = Math.max(padX, xAt(r.from) - step / 2);
+      const x2 = Math.min(width - padX, xAt(r.to) + step / 2);
+      return { ...r, x: x1, w: Math.max(0, x2 - x1) };
+    });
+  }, [bands, isSingle, width, step]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Mood line draws in, dots appear as the ink passes them, then the energy
   // line fades in. The energy line is never stroke-drawn — a dashoffset draw
   // would wipe out its "6 3" dash pattern.
@@ -194,6 +213,10 @@ export default function MoodGraph({ data, energy, width: initialWidth = 600, hei
           <feGaussianBlur stdDeviation="0.35" />
         </filter>
       </defs>
+      {bandRuns.map(b => (
+        <rect key={`${b.phase}-${b.from}`} data-band data-phase={b.phase} x={b.x.toFixed(3)} y={padTop - 8}
+          width={b.w.toFixed(3)} height={innerH + 16} rx="6" style={{ fill: 'var(--phase-tint)' }} />
+      ))}
       {refs.map((r, i) => {
         const y = yAt(r);
         return (

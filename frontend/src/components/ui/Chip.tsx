@@ -16,6 +16,7 @@ export default function Chip({ children, active = false, onClick, tilt = 0, clas
       className={`chip${active ? ' chip--on' : ''}${className ? ` ${className}` : ''}`}
       onClick={onClick}
       type="button"
+      aria-pressed={active}
       style={{ transform: `rotate(${tilt}deg)` }}
     >
       {children}

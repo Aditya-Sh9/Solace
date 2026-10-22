@@ -26,6 +26,7 @@ export interface CheckInRecord {
   symptoms:        string[]
   foodGroups:      string[]
   notes:           string | null
+  cyclePhase?:     'MENSTRUAL' | 'FOLLICULAR' | 'OVULATORY' | 'LUTEAL' | null  // set for people who track their cycle
   createdAt:       string
 }
 
