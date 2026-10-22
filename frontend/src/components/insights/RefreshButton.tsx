@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { refreshInsights } from '@/src/lib/api/insights'
+import { useAuth } from '@/src/hooks/use-auth'
+import { canSeeAiStatus, readAiStatus, writeAiStatus, type AiStatus } from '@/src/lib/dev/ai-status'
+import AiStatusNote from './AiStatusNote'
 import type { Insight } from '@/src/types/insight'
 
 interface RefreshButtonProps {
@@ -13,6 +16,19 @@ export default function RefreshButton({ onRefreshed, compact = false }: RefreshB
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
+  // Demo account only: was the last refresh written by Gemini or by the prepared fallback copy?
+  const { user } = useAuth()
+  const showAiStatus = canSeeAiStatus(user?.email)
+  // Lazy init: this only mounts after the page's data has loaded (never during SSR), and the line
+  // is hidden for everyone else anyway.
+  const [aiStatus, setAiStatus] = useState<AiStatus | null>(() => (typeof window === 'undefined' ? null : readAiStatus()))
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!showAiStatus) return
+    const tick = window.setInterval(() => setNow(Date.now()), 15_000)
+    return () => window.clearInterval(tick)
+  }, [showAiStatus])
+
   async function handleRefresh() {
     setLoading(true)
     setErrorMsg(null)
@@ -23,6 +39,12 @@ export default function RefreshButton({ onRefreshed, compact = false }: RefreshB
       return
     }
     if (data) {
+      if (showAiStatus) {
+        const next: AiStatus = { source: data.generated, at: Date.now() }
+        writeAiStatus(next)
+        setAiStatus(next)
+        setNow(next.at)
+      }
       onRefreshed(data.insights)
     }
   }
@@ -56,6 +78,7 @@ export default function RefreshButton({ onRefreshed, compact = false }: RefreshB
         </svg>
         {loading ? 'Refreshing…' : 'Refresh insights'}
       </button>
+      {showAiStatus && <AiStatusNote status={aiStatus} now={now} />}
       {errorMsg && (
         <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0, maxWidth: 320 }}>
           {errorMsg}

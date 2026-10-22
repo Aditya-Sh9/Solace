@@ -569,6 +569,10 @@ html.lenis body { height: auto; }
 /* Grid items default to min-width:auto, so the mood graph's SVG could force its
    card wider than a phone screen. Let items shrink to the column. */
 .dashboard-grid > * { min-width: 0; }
+.ai-status { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 11.5px; color: var(--ink-muted); letter-spacing: 0.01em; }
+.ai-status-dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); flex: 0 0 auto; }
+.ai-status--gemini .ai-status-dot { background: var(--accent); border-color: var(--accent); }
+.ai-status--gemini { color: var(--ink-soft); }
 .returning-note-close {
   flex: 0 0 auto; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer;
   background: none; border: none; color: var(--ink-muted); transform: rotate(45deg); border-radius: 50%;
