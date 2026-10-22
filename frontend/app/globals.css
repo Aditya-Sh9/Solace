@@ -754,6 +754,15 @@ html.lenis body { height: auto; }
   background: color-mix(in oklab, var(--surface) 40%, transparent);
 }
 .journal-privacy-note svg { flex-shrink: 0; margin-top: 1px; }
+/* 5.34 toggletip: a quiet underlined "how?" that opens the plain-language explainer inline. */
+.journal-privacy-how {
+  background: none; border: none; padding: 2px 0; margin: 0; cursor: pointer;
+  font: inherit; color: var(--ink-soft); text-decoration: underline dotted; text-underline-offset: 3px;
+}
+.journal-privacy-how:hover { color: var(--accent); }
+.journal-privacy-explainer { margin-top: 8px; color: var(--ink-soft); animation: ink-fade-in 320ms ease both; }
+.journal-privacy-explainer p { margin: 0 0 6px; }
+.journal-privacy-explainer p:last-child { margin-bottom: 0; }
 
 .journal-sheet { padding: 36px 44px 36px 80px; }
 .journal-margin-rule {

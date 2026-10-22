@@ -10,7 +10,7 @@ import { useAuth, hasPasswordIdentity } from '@/src/hooks/use-auth'
 import { createClient } from '@/src/lib/supabase/client'
 import { getJournalSalt, getJournalEntries, createJournalEntry, updateJournalEntry, deleteJournalEntry, setJournalKeyKind } from '@/src/lib/api/journal'
 import { deriveKey, encryptText, decryptText, cacheKey, getCachedKey, clearCachedKey } from '@/src/lib/journal-crypto'
-import { encodePayload, decodePayload, payloadPreview, type JournalPayload } from '@/src/lib/journal-payload'
+import { encodePayload, decodePayload, payloadPreview, payloadBytes, PAYLOAD_MAX_BYTES, type JournalPayload } from '@/src/lib/journal-payload'
 import { entryISODate } from '@/src/lib/format/journal-date'
 import type { JournalEntryRecord, JournalKeyKind } from '@/src/types/journal'
 
@@ -32,6 +32,7 @@ export type JournalStatus = 'checking' | 'locked' | 'needs-passphrase' | 'ready'
 
 const WRONG_SECRET = "That doesn't seem to open it — try once more?"
 const SOFT_FAIL    = 'Something got in the way — not your fault. Try again in a moment?'
+const TOO_LONG     = 'This page has grown longer than one page can hold. Maybe carry on in a new page?'
 
 async function decryptRecord(key: CryptoKey, r: JournalEntryRecord): Promise<JournalPage> {
   const base = {
@@ -184,7 +185,9 @@ export function useJournal() {
     const key = keyRef.current
     if (!key) return { page: null, error: SOFT_FAIL }
     try {
-      const sealed = await encryptText(key, encodePayload(payload))
+      const encoded = encodePayload(payload)
+      if (payloadBytes(encoded) > PAYLOAD_MAX_BYTES) return { page: null, error: TOO_LONG }
+      const sealed = await encryptText(key, encoded)
       const { data, error } = id
         ? await updateJournalEntry(id, sealed)
         : await createJournalEntry({ date, ...sealed })

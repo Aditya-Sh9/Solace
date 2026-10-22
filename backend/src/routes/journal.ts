@@ -60,7 +60,7 @@ router.put('/key-kind', requireAuth, async (req, res) => {
 })
 
 const sealedSchema = z.object({
-  ciphertext: z.string().min(1).max(200_000),
+  ciphertext: z.string().min(1).max(360_000), // base64 — the client keeps plaintext under 260 KB
   iv:         z.string().min(1).max(64),
 })
 const createSchema = sealedSchema.extend({ date: z.string().date() })
@@ -127,7 +127,7 @@ const listQuerySchema = z.object({
 router.get('/', requireAuth, async (req, res) => {
   const parsed = listQuerySchema.safeParse(req.query)
   if (!parsed.success) {
-    res.status(400).json({ data: null, error: 'Invalid query parameters.' })
+    res.status(400).json({ data: null, error: 'Something looks off with that request — try again in a moment?' })
     return
   }
 

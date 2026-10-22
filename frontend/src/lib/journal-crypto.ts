@@ -6,8 +6,13 @@
 const PBKDF2_ITERATIONS = 300_000
 const SESSION_KEY_STORAGE_KEY = 'solace-journal-key'
 
+// Chunked: spreading a long page's bytes into one fromCharCode call overflows the call stack.
 function toBase64(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes))
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  }
+  return btoa(binary)
 }
 
 // TS 5.7+ types plain `new Uint8Array(n)` as `Uint8Array<ArrayBufferLike>` (which also

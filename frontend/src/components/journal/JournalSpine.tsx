@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import { Icon, MoodFace } from '@/src/components/ui'
+import JournalPrivacyNote from './JournalPrivacyNote'
 import { formatShortDate, formatTime } from '@/src/lib/format/journal-date'
 import type { MoodIndex } from '@/src/lib/journal-payload'
 
@@ -24,9 +25,10 @@ interface JournalSpineProps {
   onOpen:      (key: string) => void
   onNew:       () => void
   onLoadOlder: () => Promise<string | null>
+  usesPassphrase: boolean
 }
 
-export default function JournalSpine({ items, activeKey, hasMore, onOpen, onNew, onLoadOlder }: JournalSpineProps) {
+export default function JournalSpine({ items, activeKey, hasMore, onOpen, onNew, onLoadOlder, usesPassphrase }: JournalSpineProps) {
   const [isLoadingOlder, setIsLoadingOlder] = useState(false)
   const [olderError,     setOlderError]     = useState<string | null>(null)
 
@@ -81,10 +83,7 @@ export default function JournalSpine({ items, activeKey, hasMore, onOpen, onNew,
         </div>
       )}
 
-      <div className="journal-privacy-note">
-        <Icon.Lock size={14} />
-        <span>This journal is yours alone. We can&apos;t read it, and we don&apos;t want to.</span>
-      </div>
+      <JournalPrivacyNote usesPassphrase={usesPassphrase} />
     </nav>
   )
 }

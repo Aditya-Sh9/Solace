@@ -13,6 +13,9 @@ import journalRouter    from './routes/journal'
 const app = express()
 
 app.use(cors({ origin: env.FRONTEND_URL }))
+// Journal pages are sealed client-side and can be long (the route caps ciphertext at 360k chars),
+// so they get a larger body limit. Parsed here first; the global parser then skips them.
+app.use('/api/journal', express.json({ limit: '400kb' }))
 app.use(express.json({ limit: '100kb' }))
 
 // Global rate limiter: 100 req / 15 min per IP

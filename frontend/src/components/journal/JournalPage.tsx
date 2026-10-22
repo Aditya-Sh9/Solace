@@ -172,6 +172,7 @@ export default function JournalPage() {
           onOpen={openPage}
           onNew={startNew}
           onLoadOlder={journal.loadOlder}
+          usesPassphrase={journal.usesPassphrase}
         />
       </div>
 

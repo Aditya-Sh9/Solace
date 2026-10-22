@@ -26,15 +26,20 @@ const EXTENSIONS = [StarterKit]
 
 export const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
 
-// The server caps ciphertext at 200k base64 chars (~150k plaintext). Past this, the previous
-// version is left out rather than the save failing.
-const PAYLOAD_MAX_CHARS = 140_000
+// The server caps ciphertext at 360k base64 chars (~270 KB sealed). Measured in UTF-8 bytes,
+// not string length — non-Latin writing takes 2–3 bytes a character. Past this, the previous
+// version is left out; a page too long even without it isn't sent at all.
+export const PAYLOAD_MAX_BYTES = 260_000
+
+export function payloadBytes(encoded: string): number {
+  return new TextEncoder().encode(encoded).length
+}
 
 export function encodePayload(payload: JournalPayload): string {
   const stored: StoredPayloadV1 = { v: 1, mood: payload.mood, doc: payload.doc }
   if (payload.previous) {
     const withPrevious = JSON.stringify({ ...stored, previous: payload.previous })
-    if (withPrevious.length <= PAYLOAD_MAX_CHARS) return withPrevious
+    if (payloadBytes(withPrevious) <= PAYLOAD_MAX_BYTES) return withPrevious
   }
   return JSON.stringify(stored)
 }
