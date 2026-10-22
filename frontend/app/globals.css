@@ -569,6 +569,11 @@ html.lenis body { height: auto; }
 /* Grid items default to min-width:auto, so the mood graph's SVG could force its
    card wider than a phone screen. Let items shrink to the column. */
 .dashboard-grid > * { min-width: 0; }
+.returning-note-close {
+  flex: 0 0 auto; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer;
+  background: none; border: none; color: var(--ink-muted); transform: rotate(45deg); border-radius: 50%;
+}
+.returning-note-close:hover { color: var(--ink); background: var(--accent-wash); }
 /* Mood graph x-axis: every other date hides on phones so labels never touch */
 @media (max-width: 520px) { .mood-axis [data-minor] { display: none; } }
 

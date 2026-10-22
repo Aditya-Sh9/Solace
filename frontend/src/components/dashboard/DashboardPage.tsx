@@ -15,6 +15,7 @@ import DashboardInsights       from './DashboardInsights'
 import PatternPredictionCard   from './PatternPredictionCard'
 import DashboardSkeleton       from './DashboardSkeleton'
 import DashboardError          from './DashboardError'
+import ReturningNote           from './ReturningNote'
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth()
@@ -56,6 +57,8 @@ export default function DashboardPage() {
   // DashboardInsights are left unwrapped — they already animate with Framer.
   return (
     <div className="dashboard-grid" ref={gridRef}>
+      <ReturningNote />
+
       {/* Greeting — embeds today's check-in + journal CTA buttons */}
       <div data-enter><Greeting name={name} /></div>
 

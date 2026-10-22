@@ -5,6 +5,7 @@ import type { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/src/lib/supabase/client'
 import { getJournalSalt } from '@/src/lib/api/journal'
 import { deriveKey, cacheKey, clearCachedKey } from '@/src/lib/journal-crypto'
+import { OAUTH_INTENT_COOKIE, type OAuthIntent } from '@/src/lib/auth/oauth-intent'
 
 export interface UseAuthReturn {
   user:    User | null
@@ -12,7 +13,7 @@ export interface UseAuthReturn {
   loading: boolean
   signIn:  (email: string, password: string) => Promise<{ error: string | null }>
   signUp:  (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirmation: boolean }>
-  signInWithGoogle: () => Promise<{ error: string | null }>
+  signInWithGoogle: (intent?: OAuthIntent) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -84,12 +85,22 @@ export function useAuth(): UseAuthReturn {
     }
   }, [])
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (intent: OAuthIntent = 'login') => {
     // On success the browser leaves for Google, so this only ever resolves with an error.
     // No journal key here — there is no password in scope (see hasPasswordIdentity).
+    // The callback reads this to tell "signed up with a Google account that already has
+    // Solace" apart from a plain login. A cookie, not a redirect param: the redirect URL
+    // must match Supabase's allow-list exactly.
+    document.cookie = `${OAUTH_INTENT_COOKIE}=${intent}; Max-Age=600; Path=/; SameSite=Lax`
     const { error } = await createClient().auth.signInWithOAuth({
       provider: 'google',
-      options:  { redirectTo: `${window.location.origin}/auth/callback` },
+      options:  {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        // Always show Google's account chooser. Without it, a browser signed in to one Google
+        // account (with consent already given) went straight back in — logging out and
+        // "signing up" again both silently reused the last account (bug, 2026-10-22).
+        queryParams: { prompt: 'select_account' },
+      },
     })
     return { error: error?.message ?? null }
   }, [])

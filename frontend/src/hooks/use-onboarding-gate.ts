@@ -25,7 +25,12 @@ export function useOnboardingGate(): { gate: OnboardingGateState; retry: () => v
       createClient().auth.getUser(),
     ])
     if (error || !data) { setGate({ status: 'error' }); return }
-    if (data.onboarded) { router.replace('/dashboard'); return }
+    if (data.onboarded) {
+      // Carries the callback's "signed up with a Google account that already has Solace" flag on.
+      const isReturning = new URLSearchParams(window.location.search).has('returning')
+      router.replace(isReturning ? '/dashboard?returning=1' : '/dashboard')
+      return
+    }
 
     // Google sets full_name (and name) to the whole name; email signup sets name to what
     // the person typed. The step asks for a first name, so keep only the first word.

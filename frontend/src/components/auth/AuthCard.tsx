@@ -12,6 +12,7 @@ import {
 } from '@/src/components/ui'
 import InkInput from '@/src/components/ui/InkInput'
 import { useAuth } from '@/src/hooks/use-auth'
+import type { OAuthIntent } from '@/src/lib/auth/oauth-intent'
 
 type AuthMode = 'login' | 'signup'
 
@@ -498,7 +499,7 @@ function LoginForm({ setMode }: { setMode: (m: AuthMode) => void }) {
         </InkButton>
       </form>
 
-      <OAuthRow onError={setError} />
+      <OAuthRow onError={setError} intent="login" />
       <MobileSwitch mode="login" setMode={setMode} />
     </FormShell>
   )
@@ -612,7 +613,7 @@ function SignupForm({ setMode }: { setMode: (m: AuthMode) => void }) {
         </InkButton>
       </form>
 
-      <OAuthRow onError={setError} />
+      <OAuthRow onError={setError} intent="signup" />
       <MobileSwitch mode="signup" setMode={setMode} />
     </FormShell>
   )
@@ -706,7 +707,7 @@ const OAUTH_ERROR = "Google didn't quite let us in — not your fault. Try again
 
 // Google only for now — Apple needs a paid developer account. If a second provider comes
 // back, lay the buttons out in a 2-col grid that collapses to 1 col under 480px.
-function OAuthRow({ onError }: { onError: (msg: string) => void }) {
+function OAuthRow({ onError, intent }: { onError: (msg: string) => void; intent: OAuthIntent }) {
   const { signInWithGoogle } = useAuth()
   const [busy, setBusy] = useState(false)
 
@@ -719,7 +720,7 @@ function OAuthRow({ onError }: { onError: (msg: string) => void }) {
 
   async function handleGoogle() {
     setBusy(true)
-    const { error } = await signInWithGoogle()
+    const { error } = await signInWithGoogle(intent)
     // Success navigates away to Google, so we only get here on failure.
     if (error) {
       console.error('[auth] Google sign-in failed:', error)
